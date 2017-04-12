@@ -558,3 +558,47 @@ knn6_cm6_pred
 
 3) I would also think it be valuable to change the variables included in knn. I only did this with two sets of variables, and mostly
     focused on changing the size of k.
+    
+# MuMIn and the wonders of the dredge() function!
+### MuMIn package must be installed and library called
+
+#### glm
+```{r}
+# be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
+glm1 <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
+dd_glm1 <- dredge(glm1)
+```
+```{r}
+summary(glm1)
+dd_glm1
+```
+```{r}
+# best supported models
+subset(dd_glm1, delta < 5)
+
+# best model
+subset(dd_glm1, delta == 0)
+
+# calculate variable importance weights
+importance(dd_glm1) 
+```
+
+
+### lm
+```{r}
+lm1 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + family_type_cat + FoodStamp + own_home + NumBedrooms + NumRooms, na.action = "na.fail", data=acs_fit)
+dd_lm1 <- dredge(lm1)
+summary(lm1)
+dd_lm1
+```
+```{r}
+# best supported models
+subset(dd_lm1, delta <5)
+
+# best model
+subset(dd_lm1, delta == 0)
+
+# calculate variable importance weights
+importance(dd_lm1) 
+```
+
