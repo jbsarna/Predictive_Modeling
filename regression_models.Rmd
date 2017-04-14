@@ -1,0 +1,258 @@
+---
+title: "Regression Models"
+author: "Justin Sarna"
+date: "April 14, 2017"
+output: html_document
+---
+
+```{r}
+# Load the necessary libraries
+library(ggplot2)
+library(useful)
+library(caret)
+library(ISLR)
+library(scales)
+library(plyr)
+library(rpart)
+library(rpart.plot)
+library(class)
+library(MuMIn)
+library(caret)
+```
+
+```{r}
+# code from hw4 to be used for creating additional models
+acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
+acs$foodstamp_binary <- ifelse(acs$FoodStamp == "Yes",1,0) # (yes = 1, no = 0)
+acs$own_home <- ifelse(acs$OwnRent == "Rented",0, ifelse(acs$FamilyIncome == "Mortgage",1,2)) # (own = 1, rent = 0)
+acs$family_type_cat <- ifelse(acs$FamilyType == "Married",1, ifelse(acs$FamilyIncome == "Female Head",2,3))
+# married = 1, male head = 2, female head = 3
+acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
+acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
+acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
+acs$high_electric <- (acs$ElectricBill > 350) * 1
+# Break it into a training and test set with an 80/20 split.
+set.seed(447)
+testrecs <- sample(nrow(acs),0.2 * nrow(acs))
+acs_test <- acs[testrecs,]
+acs_fit <- acs[-testrecs,]  
+# Create binary variable where 1 = not on food stamps & not renting & married
+acs$HI_pred1 <- 0
+acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
+acs$null_model <- 0
+```
+Let's start by building a *null* model in which you simply predict that everyone's
+income is < 250000 (since the majority of incomes are less than 250000).
+
+```{r}
+acs$null_model <- 0
+```
+Create a confusion matrix table and compute the overall accuracy of this model
+as well as its sensitivity and specificity.
+
+```{r}
+library(caret)
+table(acs$HighIncome, acs$null_model)
+prop.table(table(acs$HighIncome, acs$null_model))
+```
+```{r}
+confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive = "1")
+```
+
+
+# Logistic Regression
+# Multilevel Model Specification
+#### lme()
+
+```{r}
+summary(acs_norm2)
+```
+```{r}
+library(nlme)
+mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
+summary(mms1)
+```
+```{r}
+mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
+summary(mms2)
+```
+1) specify the model
+2) show summary results
+3) check fitted values from the model
+4) set variable equal to fitted values with probability greater than 50%
+5) show fitted values for visual check of model
+6) confusion matrix
+
+#### logistic regression model 1
+```{r}
+logmod1 <- glm(HighIncome ~ FamilyType + NumVehicles + OwnRent + Insurance + YearBuilt, data=acs_fit, family=binomial(link="logit"))
+summary(logmod1)
+#logmod1$fitted.values[1:10] - use this to check probabilities
+yhat_logmod1 <- (logmod1$fitted.values > 0.05) * 1
+#logmod1$y[1:200] - use this to check fitted values
+summary(as.factor(yhat_logmod1))
+summary(logmod1$fitted.values)
+log_cm1 <- confusionMatrix(as.factor(yhat_logmod1), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm1
+```
+#### logistic regression model 2
+```{r}
+logmod2 <- glm(HighIncome ~ FamilyType + FoodStamp + OwnRent, data=acs_fit, family=binomial(link="logit"))
+summary(logmod2)
+#logmod2$fitted.values[1:10] - use this to check probabilities
+yhat_logmod2 <- (logmod2$fitted.values > 0.5) * 1
+#logmod2$y[1:50] - use this to check fitted values
+log_cm2 <- confusionMatrix(as.factor(yhat_logmod2), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm2
+```
+#### logistic regression model 3
+```{r}
+logmod3 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh + FoodStamp + OwnRent, data=acs_fit, family=binomial(link="logit"))
+summary(logmod3)
+#logmod3$fit[18100:18196] - use this to check probabilities
+yhat_logmod3 <- (logmod3$fit > 0.5) * 1
+#logmod3$y[18000:18196] - use this to check fitted values
+log_cm3 <- confusionMatrix(as.factor(yhat_logmod3), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm3
+```
+#### logistic regression model 4
+```{r}
+logmod4 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
+summary(logmod4)
+#logmod4$fit[18100:18196] - use this to check probabilities
+yhat_logmod4 <- (logmod4$fit > 0.5) * 1
+#logmod4$y[18000:18196] - use this to check fitted values
+log_cm4 <- confusionMatrix(as.factor(yhat_logmod4), as.factor(acs_fit$HighIncome), positive = "1")
+```
+#### logistic regression model 5
+```{r}
+logmod5 <- glm(HighIncome ~ HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
+summary(logmod5)
+#logmod5$fit[18100:18196] - use this to check probabilities
+yhat_logmod5 <- (logmod4$fit > 0.5) * 1
+#logmod5$y[18000:18196] - use this to check fitted values
+log_cm5 <- confusionMatrix(as.factor(yhat_logmod5), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm5
+```
+# Linear Regression with predictions
+
+#### linear regression model 1
+```{r}
+# First linear regression to estimate family income with test data set
+linear_mod1 <- lm(FamilyIncome ~ FamilyType + FoodStamp + OwnRent + HouseCosts + Insurance + ElectricBill + NumRooms, data=acs_fit)
+summary(linear_mod1)
+```
+#### linear regression model 2
+```{r}
+# Created another linear regression to estimate family income with test data set to be used for predicting high income
+linear_mod2 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
+summary(linear_mod2)
+linear_mod2$fitted.values[1:25]
+acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
+linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+linear_cm2
+```
+## Regression Model Comparison
+Could not get it to work how I wanted - I have the big chunk of code if you want to see it!
+
+# Comments on logit and linear regression model
+1) My linear model does estimate negative incomes, which is not logically or stastically sound
+    However, the purpose is to find best predictive model. So I ignored this to see how accurate I could predict High Income
+    I also created multi# Multilevel Model Specification
+#### lme()
+
+```{r}
+summary(acs_norm2)
+```
+```{r}
+library(nlme)
+mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
+summary(mms1)
+```
+```{r}
+mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
+summary(mms2)
+```ple linear regressions, and chose this one. I based my decision on R-squared and changes in adjusted R-
+    squared as I added/subtracted variables.
+
+2) Best regression model = linear regression model 2 - based on accuracy at .941 (null model = .9389) and sensitivity at .23277
+
+# MuMIn and the wonders of the dredge() function!
+### MuMIn package must be installed and library called
+
+#### glm dredge
+```{r}
+# be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
+glm1 <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
+dd_glm1 <- dredge(glm1)
+```
+```{r}
+summary(glm1)
+dd_glm1
+```
+```{r}
+# best supported models
+subset(dd_glm1, delta < 5)
+
+# best model
+subset(dd_glm1, delta == 0)
+
+# calculate variable importance weights
+importance(dd_glm1) 
+```
+
+
+### lm dredge
+```{r}
+lm1 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + family_type_cat + FoodStamp + own_home + NumBedrooms + NumRooms, na.action = "na.fail", data=acs_fit)
+dd_lm1 <- dredge(lm1)
+summary(lm1)
+dd_lm1
+```
+```{r}
+# best supported models
+subset(dd_lm1, delta <5)
+
+# best model
+subset(dd_lm1, delta == 0)
+
+# calculate variable importance weights
+importance(dd_lm1) 
+```
+# Multilevel Model Specification
+#### lme()
+
+```{r}
+summary(acs_norm2)
+```
+```{r}
+library(nlme)
+mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
+summary(mms1)
+```
+```{r}
+mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
+summary(mms2)
+```
+# GAM
+```{r}
+library(mgcv)
+```
+
+```{r}
+gam_mod1 <- gam(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
+summary(gam_mod1)
+gam_mod1$fitted.values[1:25]
+acs_fit$gamest_HighIncome <- ifelse(gam_mod1$fit > 250000,1,0)
+gam_cm1 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+gam_cm1
+# Simply proved that linear vs non-linear has same accuracy
+```
+```{r}
+gam_mod2 <- gam(HighIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit, family=binomial(link="logit"))
+summary(gam_mod2)
+gam_mod2$fitted.values[1:25]
+acs_fit$gamest_HighIncome2 <- ifelse(gam_mod2$fit > .5 ,1,0)
+gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_fit$HighIncome), positive = "1")
+gam_cm2
+```

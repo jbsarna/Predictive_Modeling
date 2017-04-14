@@ -1,0 +1,189 @@
+---
+title: "data_exploration"
+author: "Justin Sarna"
+date: "April 14, 2017"
+output: html_document
+---
+```{r}
+# Load the necessary libraries
+library(ggplot2)
+library(useful)
+library(caret)
+library(ISLR)
+library(scales)
+library(plyr)
+library(rpart)
+library(rpart.plot)
+library(class)
+library(MuMIn)
+library(caret)
+```
+
+```{r}
+# code from hw4 to be used for creating additional models
+acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
+acs$foodstamp_binary <- ifelse(acs$FoodStamp == "Yes",1,0) # (yes = 1, no = 0)
+acs$own_home <- ifelse(acs$OwnRent == "Rented",0, ifelse(acs$FamilyIncome == "Mortgage",1,2)) # (own = 1, rent = 0)
+acs$family_type_cat <- ifelse(acs$FamilyType == "Married",1, ifelse(acs$FamilyIncome == "Female Head",2,3))
+# married = 1, male head = 2, female head = 3
+acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
+acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
+acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
+acs$high_electric <- (acs$ElectricBill > 350) * 1
+# Break it into a training and test set with an 80/20 split.
+set.seed(447)
+testrecs <- sample(nrow(acs),0.2 * nrow(acs))
+acs_test <- acs[testrecs,]
+acs_fit <- acs[-testrecs,]  
+# Create binary variable where 1 = not on food stamps & not renting & married
+acs$HI_pred1 <- 0
+acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
+acs$null_model <- 0
+```
+
+```{r}
+# I like this visualization for a quick visual of what I'm dealing with before digging in (modified from class notes)
+ggplot(acs,aes(x=FamilyIncome)) + geom_density(fill="#31a354", color="#31a354") +
+  geom_vline(xintercept=250000) + scale_x_continuous(label=multiple.dollar, limits=c(0,1000000))
+```
+
+### Interesting test I found for testing data normality - downside is it has a 5000 observation limit
+If p-value is less than .05 (or chosen significance level) then sample is NOT normally distributed
+This is not relevant here, but worth keeping for future
+The plot shows that there is a clear left skewned distribution - expected but still nice to include
+
+```{r}
+shapiro.test(acs_test$FamilyIncome)
+```
+
+# Task 2: Preliminary EDA and feature engineering
+
+Before trying to build any classification models, you should do some exploratory data analysis to
+try to get a sense of which variables might be useful for trying to predict cases where FamilyIncome >= 250000. You should use a combination
+of group by analysis (i.e. plyr or dplyr or similar) and plotting.  
+
+If you decide you'd like to create some new variables (feature engineering), feel free to do that. Just document what you did and why you did it. 
+
+```{r}
+# Get some summary stats on each variable
+summary(acs_fit)
+```
+
+# Histogram
+
+```{r}
+# see that those that those that own home correlate with higher incomes overall
+ggplot(acs_fit) + geom_histogram(aes(x=own_home), fill = "gray")
+```
+
+# Scatterplots
+
+```{r}
+# scatter number of workers and family income
+ggplot(data=acs_fit) + geom_point(aes(x=NumWorkers, y=FamilyIncome))
+
+# scatter plot shows that those not on foodstamps tend to have higher income = duh, but relevant for model later
+ggplot(data=acs_fit) + geom_point(aes(x=foodstamp_binary, y=FamilyIncome))
+
+# plot shows that homes with 2 workers correlate with higher incomes vs other number of workers
+ggplot(data=acs_fit) + geom_point(aes(x=NumWorkers, y=FamilyIncome))
+
+# notice that there are very few observations with male head type. Female head has lower income and married highest incomes
+ggplot(data=acs_fit) + geom_point(aes(x=family_type_cat, y=FamilyIncome))
+
+# scatter house costs and family income - see that higher house costs correlate to higher incomes (slightly) - nothin major though
+ggplot(data=acs_fit) + geom_point(aes(x=HouseCosts, y=FamilyIncome))
+```
+
+```{r}
+# create matrix of scatterplots
+# pairs(acs[,1:19])
+```
+# Boxplot
+
+#### coor_cartesian -> Setting limits on the coordinate system will zoom the plot (like you're looking at it with a magnifying glass), and will not change the underlying data like setting limits on a scale will.
+```{r}
+# See that outliers begin roughly around income of $100,000
+ggplot(data=acs_fit) + geom_boxplot(aes(x=NumWorkers, y=FamilyIncome))  + coord_cartesian(ylim = c(0, 350000))
+```
+
+# Density Plots
+
+#### These show the density by variable on axis. These are useful to see the concentration range of values
+```{r}
+ggplot(acs_fit) + geom_density(aes(x=acs_fit$FamilyIncome)) + scale_x_continuous(labels=dollar)
+```
+
+```{r}
+ggplot(acs_fit) + geom_density(aes(x=acs_fit$HouseCosts)) + scale_x_continuous(labels=dollar)
+```
+```{r}
+ggplot(acs_fit) + geom_density(aes(x=acs_fit$NumChildren)) + scale_x_continuous()
+```
+```{r}
+ggplot(acs_fit) + geom_density(aes(x=acs_fit$FamilyIncome)) + scale_x_log10(breaks =c(100,1000,10000,100000), labels=dollar) + annotation_logticks(sides="bt")
+```
+```{r}
+ggplot(acs_fit) + geom_density(aes(x=acs_fit$HouseCosts)) + scale_x_log10(breaks =c(100,1000,10000,100000), labels=dollar) + annotation_logticks(sides="bt")
+```
+# Misc Plots
+```{r}
+# shows positive correlation between insurance and family income
+ggplot(acs_fit, aes(x=acs_fit$Insurance, y=acs_fit$FamilyIncome)) +geom_point() + geom_smooth()
+```
+```{r}
+# density plot for electrical bil
+ggplot(acs_fit) + geom_density(aes(x=acs_fit$ElectricBill)) + scale_x_log10(breaks =c(100,1000,10000,100000), labels=dollar) + annotation_logticks(sides="bt")
+
+# shows positive correlation between electric bill and family income
+ggplot(acs_fit, aes(x=acs_fit$ElectricBill, y=acs_fit$FamilyIncome)) +geom_point() + geom_smooth()
+```
+
+# Group by analysis
+
+```{r}
+# This shows a good spread or range of each family type group. This will lend itself well to being included in my analysis
+ddply(acs_fit,.(FamilyType),summarise,family_type_count=length(FamilyIncome))
+```
+```{r}
+# Interesting look at mean income of family type grouped with home ownership type
+ddply(acs_fit,.(FamilyType,OwnRent), summarise, mean_income=mean(FamilyIncome))
+```
+```{r}
+ddply(acs_fit,.(FamilyType,FoodStamp), summarise, mean_income=mean(FamilyIncome))
+```
+```{r}
+# simple look at mean income by foodstamp. Obvious results, but at the same time surprising to find that mean income 
+# for those on food stamps in near $50k
+ddply(acs_fit,.(FoodStamp), summarise, mean_income=mean(FamilyIncome))
+```
+```{r}
+ddply(acs_fit,.(FoodStamp,NumBedrooms), summarise, mean_income=mean(FamilyIncome), num_bedrooms=mean(NumBedrooms))
+```
+```{r}
+# This is a little excessive, but would be useful for piping it to a csv file (for example) if relevant to tasks at hand
+ddply(acs,.(NumBedrooms,NumChildren,NumPeople,NumRooms,NumUnits,NumVehicles,NumWorkers), summarise, mean_income=mean(FamilyIncome))
+```
+```{r}
+ddply(acs_fit,.(OwnRent), summarise, mean_income=mean(FamilyIncome))
+```
+
+# Count (family income) by various important indicators/variables
+
+```{r}
+# Family Type
+tapply(acs_fit$FamilyIncome,acs_fit$FamilyType,length)
+tapply(acs_fit$FamilyIncome,acs_fit$FamilyType,mean)
+```
+
+```{r}
+# Own/Rent
+tapply(acs_fit$FamilyIncome,acs_fit$OwnRent,length)
+tapply(acs_fit$FamilyIncome,acs_fit$OwnRent,mean)
+```
+
+```{r}
+# Insurance
+tapply(acs_fit$FamilyIncome,acs_fit$FoodStamp,length)
+tapply(acs_fit$FamilyIncome,acs_fit$FoodStamp,mean)
+```

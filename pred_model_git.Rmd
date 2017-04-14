@@ -1,5 +1,5 @@
 ---
-title: "HW4 - High income household prediction"
+title: "Predictive Model Comparisions"
 output: html_document
 Author: Justin Sarna
 Class: MIS 680
@@ -613,8 +613,106 @@ mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1
 summary(mms1)
 ```
 ```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, data=acsNorm_learn2, random =~ FamilyType | Insurance)
+mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
 summary(mms2)
 ```
+# Cluster Analysis
+
+```{r}
+acs_numericals2 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance)
+acs_norm2 <- as.data.frame(lapply(acs_numericals2[1:3], normalize))
+#acs_norm2$HighIncome1 <- c(acs$HighIncome)
+#acs_norm2$FamilyIncome1 <- c(acs$FamilyIncome)
+acs_norm2$FamilyType1 <- c(acs$FamilyType)
+```
+
+
+vars_to_use <- colnames(acs_norm2)[-1]
+pmatrix <- scale(acs_norm2[,vars_to_use])
+pcenter <- attr(pmatrix, "scaled:center")
+pscale <- attr(pmatrix, "scaled:scale")
+
+
+```{r}
+distance <- dist(acs_norm2, method ="euclidean")
+pfit <- hclust(distance, method = "ward")
+```
+```{r}
+cluster1 <- plot(pfit, labels = acs_norm2$FamilyType)
+rect.hclust(pfit, k=5)
+```
+```{r}
+groups <- cutree(pfit, k=5)
+print_clusters <- function(labels,k){
+  for(i in 1:k){
+    print(paste("cluster", i))
+    print(acs_norm2[labels==i,c("HouseCosts","ElectricBill", "Insurance","FamilyType")])
+  }
+}
+```
+```{r}
+print_clusters(groups, 5)
+```
+# Random Forests
+```{r}
+library(randomForest)
+```
+```{r}
+loglikelihood <- function(y,py) {
+  pysmooth <- ifelse(py==0, 1e-12,
+                     ifelse(py==1, 1-1e-12,py))
+  sum(y * log(pysmooth) + (1-y)*log(1 - pysmooth))
+}
+```
+
+```{r}
+accuracyMeasures <- function(pred, truth, name="model"){
+  dev.norm <- -2*loglikelihood(as.numeric(truth),pred)/length(pred)
+  ctable <- table(truth=truth,
+                  pred=(pred>.5))
+  accuracy <- sum(diag(ctable))/sum(ctable)
+  precision <- ctable[2,2]/sum(ctable[,2])
+  recall <- ctable[2,2]/sum(ctable[,2])
+  f1 <- precision*recall
+  data.frame(model=name,accuracy=accuracy,f1=f1,dev.norm)
+}
+```
+
+```{r}
+randtree_mod1 <- randomForest(x=acs_fit[3:18], 
+                              y=acs_fit$FamilyIncome,
+                              ntree=100,
+                              nodesize = 7,
+                              importance=T)
+```
+```{r}
+accuracyMeasures(predict(randtree_mod1, newdata=acs_fit, [,'FamilyIncome'],
+                 acs_fit$FamilyIncome == 'FamilyIncome', name='random forest, train')
+```
+
+# GAM
+```{r}
+library(mgcv)
+```
+
+```{r}
+gam_mod1 <- gam(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
+summary(gam_mod1)
+gam_mod1$fitted.values[1:25]
+acs_fit$gamest_HighIncome <- ifelse(gam_mod1$fit > 250000,1,0)
+gam_cm1 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+gam_cm1
+# Simply proved that linear vs non-linear has same accuracy
+```
+```{r}
+gam_mod2 <- gam(HighIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit, family=binomial(link="logit"))
+summary(gam_mod2)
+gam_mod2$fitted.values[1:25]
+acs_fit$gamest_HighIncome2 <- ifelse(gam_mod2$fit > .5 ,1,0)
+gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_fit$HighIncome), positive = "1")
+gam_cm2
+```
+
+
 
 
