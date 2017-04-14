@@ -1,0 +1,118 @@
+---
+title: "decision_trees"
+author: "Justin Sarna"
+date: "April 14, 2017"
+output: html_document
+---
+```{r}
+# Load the necessary libraries
+library(ggplot2)
+library(useful)
+library(caret)
+library(ISLR)
+library(scales)
+library(plyr)
+library(rpart)
+library(rpart.plot)
+library(class)
+library(MuMIn)
+library(caret)
+```
+# Create some new variables based on EDA
+```{r}
+# code from hw4 to be used for creating additional models
+acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
+acs$foodstamp_binary <- ifelse(acs$FoodStamp == "Yes",1,0) # (yes = 1, no = 0)
+acs$own_home <- ifelse(acs$OwnRent == "Rented",0, ifelse(acs$FamilyIncome == "Mortgage",1,2)) # (own = 1, rent = 0)
+acs$family_type_cat <- ifelse(acs$FamilyType == "Married",1, ifelse(acs$FamilyIncome == "Female Head",2,3))
+# married = 1, male head = 2, female head = 3
+acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
+acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
+acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
+acs$high_electric <- (acs$ElectricBill > 350) * 1
+# Break it into a training and test set with an 80/20 split.
+set.seed(447)
+testrecs <- sample(nrow(acs),0.2 * nrow(acs))
+acs_test <- acs[testrecs,]
+acs_fit <- acs[-testrecs,]  
+# Create binary variable where 1 = not on food stamps & not renting & married
+acs$HI_pred1 <- 0
+acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
+acs$null_model <- 0
+```
+# DECISION TREES
+1) Specify model
+2) use rplot with model as specified
+3) Show head of tree prediction probabilities
+4) Show head of tree predictions as binary
+5) Create variable as a Confusion matrix for tree
+6) Display confusion matrix
+
+#### Decision tree 1
+```{r}
+tree1 <- rpart(HighIncome ~ FamilyType + HouseCosts + NumWorkers2 + OwnRent + Insurance + NumWorkers2 + YearBuilt + NumBedrooms, 
+               data=acs_fit, method="class")
+rpart.plot(tree1)
+head(predict(tree1))
+head(predict(tree1, type="class"))
+tree1_cm <- confusionMatrix(predict(tree1, type="class"), acs_fit$HighIncome, positive = "1")
+tree1_cm
+```
+#### Decision tree 2
+```{r}
+tree2 <- rpart(HighIncome ~ FoodStamp + Insurance + FamilyType, data=acs_fit, method="class", control=rpart.control(minsplit=2, cp=0))
+rpart.plot(tree2)
+head(predict(tree2))
+head(predict(tree2, type="class"))
+tree2_cm <- confusionMatrix(predict(tree2, type="class"), acs_fit$HighIncome, positive = "1")
+tree2_cm
+```
+#### Decision tree 3
+```{r}
+tree3 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts, data=acs_fit, method="class", control=rpart.control(minsplit=2,
+            cp=.005))
+rpart.plot(tree3)
+head(predict(tree3))
+head(predict(tree3, type="class"))
+tree3_cm <- confusionMatrix(predict(tree3, type="class"), acs_fit$HighIncome, positive = "1")
+tree3_cm
+```
+#### Decision tree 4
+```{r}
+tree4 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms + NumChildren + NumPeople + NumRooms + NumVehicles +
+                 NumWorkers + FoodStamp + OwnRent + ElectricBill + HouseCosts, data=acs_fit, method="class",
+                 control=rpart.control(minsplit=2, cp=0))
+rpart.plot(tree4)
+head(predict(tree4))
+head(predict(tree4, type="class"))
+tree4_cm <- confusionMatrix(predict(tree4, type="class"), acs_fit$HighIncome, positive = "1")
+tree4_cm
+```
+
+## Tree Comparison
+
+```{r}
+# make predictions using test data
+tree1_pred <- predict(tree1, acs_test, type="class" )
+tree2_pred <- predict(tree2, acs_test, type="class" ) 
+tree3_pred <- predict(tree3, acs_test, type="class" ) 
+tree4_pred <- predict(tree4, acs_test, type="class" )
+
+# Confusion matrices
+tree_cm1_pred <- confusionMatrix(tree1_pred, acs_test$HighIncome, positive = "1")
+tree_cm2_pred <- confusionMatrix(tree2_pred, acs_test$HighIncome, positive = "1")
+tree_cm3_pred <- confusionMatrix(tree3_pred, acs_test$HighIncome, positive = "1")
+tree_cm4_pred <- confusionMatrix(tree4_pred, acs_test$HighIncome, positive = "1")
+
+# Display comparison of accuracy of each decision tree 
+sprintf("Tree1: Fit acc = %.3f Pred acc = %.3f",tree1_cm$overall['Accuracy'], tree_cm1_pred$overall['Accuracy'])
+sprintf("Tree2: Fit acc = %.3f Pred acc = %.3f",tree2_cm$overall['Accuracy'], tree_cm2_pred$overall['Accuracy'])
+sprintf("Tree3: Fit acc = %.3f Pred acc = %.3f",tree3_cm$overall['Accuracy'], tree_cm3_pred$overall['Accuracy'])
+sprintf("Tree4: Fit acc = %.3f Pred acc = %.3f",tree4_cm$overall['Accuracy'], tree_cm4_pred$overall['Accuracy'])
+```
+## Decision Tree Decision
+
+1) At first glance tree 4 would appear the best choice. However, this tree has a nearly 100% accuracy in the fit data BUT the lowest 
+    prediction accuracy. This can be seen through its extreme complexity which leads to a .99 sensitivity. This is like overfitting 
+    that leads to "garbage" predictions unless the samples are nearly identical
+2) I would choose Tree 3 for two reasons - First, it has highest prediction accuracy. Second, it has a pretty low sensitivity at .14

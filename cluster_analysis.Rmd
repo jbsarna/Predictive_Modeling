@@ -18,7 +18,7 @@ library(class)
 library(MuMIn)
 library(caret)
 ```
-
+# Create some new variables based on EDA
 ```{r}
 # code from hw4 to be used for creating additional models
 acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
@@ -40,6 +40,7 @@ acs$HI_pred1 <- 0
 acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
 acs$null_model <- 0
 ```
+
 # Cluster Analysis
 
 ```{r}

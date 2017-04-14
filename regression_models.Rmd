@@ -19,7 +19,7 @@ library(class)
 library(MuMIn)
 library(caret)
 ```
-
+# Create new variables based on EDA
 ```{r}
 # code from hw4 to be used for creating additional models
 acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
@@ -44,6 +44,7 @@ acs$null_model <- 0
 Let's start by building a *null* model in which you simply predict that everyone's
 income is < 250000 (since the majority of incomes are less than 250000).
 
+# Null Model for model comparison
 ```{r}
 acs$null_model <- 0
 ```
@@ -59,23 +60,8 @@ prop.table(table(acs$HighIncome, acs$null_model))
 confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive = "1")
 ```
 
-
 # Logistic Regression
-# Multilevel Model Specification
-#### lme()
 
-```{r}
-summary(acs_norm2)
-```
-```{r}
-library(nlme)
-mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
-summary(mms1)
-```
-```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
-summary(mms2)
-```
 1) specify the model
 2) show summary results
 3) check fitted values from the model
@@ -152,13 +138,21 @@ acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
 linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 linear_cm2
 ```
-## Regression Model Comparison
-Could not get it to work how I wanted - I have the big chunk of code if you want to see it!
+# Multilevel Model Specification
+#### lme()
 
-# Comments on logit and linear regression model
-1) My linear model does estimate negative incomes, which is not logically or stastically sound
-    However, the purpose is to find best predictive model. So I ignored this to see how accurate I could predict High Income
-    I also created multi# Multilevel Model Specification
+```{r}
+summary(acs_norm2)
+```
+```{r}
+library(nlme)
+mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
+summary(mms1)
+```
+```{r}
+mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
+summary(mms2)
+```
 #### lme()
 
 ```{r}
@@ -256,3 +250,10 @@ acs_fit$gamest_HighIncome2 <- ifelse(gam_mod2$fit > .5 ,1,0)
 gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_fit$HighIncome), positive = "1")
 gam_cm2
 ```
+# Regression Model Comparison
+Could not get it to work how I wanted - I have the big chunk of code if you want to see it!
+
+# Comments on logit and linear regression model
+1) My linear model does estimate negative incomes, which is not logically or stastically sound
+    However, the purpose is to find best predictive model. So I ignored this to see how accurate I could predict High Income
+    I also created multi# Multilevel Model Specification

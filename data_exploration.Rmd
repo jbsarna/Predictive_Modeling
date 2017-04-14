@@ -18,7 +18,7 @@ library(class)
 library(MuMIn)
 library(caret)
 ```
-
+# Create new variables for potential use in visualizations and model specification
 ```{r}
 # code from hw4 to be used for creating additional models
 acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
