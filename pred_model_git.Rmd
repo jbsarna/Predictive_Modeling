@@ -562,7 +562,7 @@ knn6_cm6_pred
 # MuMIn and the wonders of the dredge() function!
 ### MuMIn package must be installed and library called
 
-#### glm
+#### glm dredge
 ```{r}
 # be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
 glm1 <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
@@ -584,7 +584,7 @@ importance(dd_glm1)
 ```
 
 
-### lm
+### lm dredge
 ```{r}
 lm1 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + family_type_cat + FoodStamp + own_home + NumBedrooms + NumRooms, na.action = "na.fail", data=acs_fit)
 dd_lm1 <- dredge(lm1)
@@ -601,4 +601,20 @@ subset(dd_lm1, delta == 0)
 # calculate variable importance weights
 importance(dd_lm1) 
 ```
+# Multilevel Model Specification
+#### lme()
+
+```{r}
+summary(acs_norm2)
+```
+```{r}
+library(nlme)
+mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
+summary(mms1)
+```
+```{r}
+mms2 <- lme(fixed = HighIncome ~ FamilyType, data=acsNorm_learn2, random =~ FamilyType | Insurance)
+summary(mms2)
+```
+
 
