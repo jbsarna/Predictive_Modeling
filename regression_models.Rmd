@@ -127,6 +127,9 @@ log_cm5
 # First linear regression to estimate family income with test data set
 linear_mod1 <- lm(FamilyIncome ~ FamilyType + FoodStamp + OwnRent + HouseCosts + Insurance + ElectricBill + NumRooms, data=acs_fit)
 summary(linear_mod1)
+acs_fit$linest_HighIncome <- ifelse(linear_mod1$fit > 250000,1,0)
+linear_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+linear_cm1
 ```
 #### linear regression model 2
 ```{r}
@@ -137,6 +140,9 @@ linear_mod2$fitted.values[1:25]
 acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
 linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 linear_cm2
+
+# Now test model on acs_test
+
 ```
 # Multilevel Model Specification
 #### lme()
@@ -166,7 +172,9 @@ summary(mms1)
 ```{r}
 mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
 summary(mms2)
-```ple linear regressions, and chose this one. I based my decision on R-squared and changes in adjusted R-
+```
+Simple linear regressions, and chose this one. I based my decision on sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm4$overall['Accuracy'], 
+        log_cm4$byClass['Sensitivity'])R-squared and changes in adjusted R-
     squared as I added/subtracted variables.
 
 2) Best regression model = linear regression model 2 - based on accuracy at .941 (null model = .9389) and sensitivity at .23277
@@ -187,10 +195,8 @@ dd_glm1
 ```{r}
 # best supported models
 subset(dd_glm1, delta < 5)
-
 # best model
 subset(dd_glm1, delta == 0)
-
 # calculate variable importance weights
 importance(dd_glm1) 
 ```
@@ -206,10 +212,8 @@ dd_lm1
 ```{r}
 # best supported models
 subset(dd_lm1, delta <5)
-
 # best model
 subset(dd_lm1, delta == 0)
-
 # calculate variable importance weights
 importance(dd_lm1) 
 ```
@@ -222,7 +226,9 @@ summary(acs_norm2)
 ```{r}
 library(nlme)
 mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
-summary(mms1)
+summary(mms1)acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
+linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+linear_cm2
 ```
 ```{r}
 mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
@@ -251,7 +257,26 @@ gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_
 gam_cm2
 ```
 # Regression Model Comparison
-Could not get it to work how I wanted - I have the big chunk of code if you want to see it!
+```{r}
+# Display comparison of accuracy of each decision tree 
+sprintf("Linear model 1:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f adj R-squared = %.3f", 
+        linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], 
+        summary(linear_mod1)$adj.r.squared['Adjusted R-squared'])
+
+sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f",linear_cm2$overall['Accuracy'], 
+        linear_cm2$byClass['Sensitivity'])
+sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm1$overall['Accuracy'], 
+        log_cm1$byClass['Sensitivity'])
+sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm2$overall['Accuracy'], 
+        log_cm2$byClass['Sensitivity'])
+sprintf("Logistic model 3: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm3$overall['Accuracy'], 
+        log_cm3$byClass['Sensitivity'])
+sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm4$overall['Accuracy'], 
+        log_cm4$byClass['Sensitivity'])
+sprintf("Logistic model 5: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm5$overall['Accuracy'], 
+        log_cm5$byClass['Sensitivity'])
+
+```
 
 # Comments on logit and linear regression model
 1) My linear model does estimate negative incomes, which is not logically or stastically sound

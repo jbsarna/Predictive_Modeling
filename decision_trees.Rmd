@@ -104,12 +104,23 @@ tree_cm2_pred <- confusionMatrix(tree2_pred, acs_test$HighIncome, positive = "1"
 tree_cm3_pred <- confusionMatrix(tree3_pred, acs_test$HighIncome, positive = "1")
 tree_cm4_pred <- confusionMatrix(tree4_pred, acs_test$HighIncome, positive = "1")
 
-# Display comparison of accuracy of each decision tree 
-sprintf("Tree1: Fit acc = %.3f Pred acc = %.3f",tree1_cm$overall['Accuracy'], tree_cm1_pred$overall['Accuracy'])
+# Display comparison of accuracy of each decision tree - Finish updating this section for final output
+sprintf("Tree1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f",tree1_cm_pred$overall['Accuracy'], 
+        tree_cm1_pred$byClass['Sensitivity'])
 sprintf("Tree2: Fit acc = %.3f Pred acc = %.3f",tree2_cm$overall['Accuracy'], tree_cm2_pred$overall['Accuracy'])
 sprintf("Tree3: Fit acc = %.3f Pred acc = %.3f",tree3_cm$overall['Accuracy'], tree_cm3_pred$overall['Accuracy'])
 sprintf("Tree4: Fit acc = %.3f Pred acc = %.3f",tree4_cm$overall['Accuracy'], tree_cm4_pred$overall['Accuracy'])
 ```
+Here is code for above
+sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm1_pred$overall['Accuracy'], 
+        tree_cm1_pred$byClass['Sensitivity'])
+sprintf("Tree2: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm2_pred$overall['Accuracy'], 
+        tree_cm2_pred$byClass['Sensitivity'])
+sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm3_pred$overall['Accuracy'], 
+        tree_cm3_pred$byClass['Sensitivity'])
+sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm4_pred$overall['Accuracy'], 
+        tree_cm4_pred$byClass['Sensitivity'])
+
 ## Decision Tree Decision
 
 1) At first glance tree 4 would appear the best choice. However, this tree has a nearly 100% accuracy in the fit data BUT the lowest 
