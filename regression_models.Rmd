@@ -66,18 +66,16 @@ confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive =
 2) show summary results
 3) check fitted values from the model
 4) set variable equal to fitted values with probability greater than 50%
-5) show fitted values for visual check of model
-6) confusion matrix
+5) set variable = adjusted R-squared for model comparison
+7) confusion matrix
 
 #### logistic regression model 1
 ```{r}
-logmod1 <- glm(HighIncome ~ FamilyType + NumVehicles + OwnRent + Insurance + YearBuilt, data=acs_fit, family=binomial(link="logit"))
+logmod1 <- glm(HighIncome ~ FamilyType + NumVehicles + OwnRent + Insurance + YearBuilt, data=acs_fit, 
+               family=binomial(link="logit"))
 summary(logmod1)
-#logmod1$fitted.values[1:10] - use this to check probabilities
 yhat_logmod1 <- (logmod1$fitted.values > 0.05) * 1
-#logmod1$y[1:200] - use this to check fitted values
-summary(as.factor(yhat_logmod1))
-summary(logmod1$fitted.values)
+log_mod1_aic <- summary(logmod1)$aic
 log_cm1 <- confusionMatrix(as.factor(yhat_logmod1), as.factor(acs_fit$HighIncome), positive = "1")
 log_cm1
 ```
@@ -85,9 +83,8 @@ log_cm1
 ```{r}
 logmod2 <- glm(HighIncome ~ FamilyType + FoodStamp + OwnRent, data=acs_fit, family=binomial(link="logit"))
 summary(logmod2)
-#logmod2$fitted.values[1:10] - use this to check probabilities
 yhat_logmod2 <- (logmod2$fitted.values > 0.5) * 1
-#logmod2$y[1:50] - use this to check fitted values
+log_mod2_aic <- summary(logmod2)$aic
 log_cm2 <- confusionMatrix(as.factor(yhat_logmod2), as.factor(acs_fit$HighIncome), positive = "1")
 log_cm2
 ```
@@ -95,9 +92,8 @@ log_cm2
 ```{r}
 logmod3 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh + FoodStamp + OwnRent, data=acs_fit, family=binomial(link="logit"))
 summary(logmod3)
-#logmod3$fit[18100:18196] - use this to check probabilities
 yhat_logmod3 <- (logmod3$fit > 0.5) * 1
-#logmod3$y[18000:18196] - use this to check fitted values
+log_mod3_aic <- summary(logmod3)$aic
 log_cm3 <- confusionMatrix(as.factor(yhat_logmod3), as.factor(acs_fit$HighIncome), positive = "1")
 log_cm3
 ```
@@ -105,18 +101,17 @@ log_cm3
 ```{r}
 logmod4 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
 summary(logmod4)
-#logmod4$fit[18100:18196] - use this to check probabilities
 yhat_logmod4 <- (logmod4$fit > 0.5) * 1
-#logmod4$y[18000:18196] - use this to check fitted values
+log_mod4_aic <- summary(logmod4)$aic
 log_cm4 <- confusionMatrix(as.factor(yhat_logmod4), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm4
 ```
 #### logistic regression model 5
 ```{r}
 logmod5 <- glm(HighIncome ~ HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
 summary(logmod5)
-#logmod5$fit[18100:18196] - use this to check probabilities
 yhat_logmod5 <- (logmod4$fit > 0.5) * 1
-#logmod5$y[18000:18196] - use this to check fitted values
+log_mod5_aic <- summary(logmod5)$aic
 log_cm5 <- confusionMatrix(as.factor(yhat_logmod5), as.factor(acs_fit$HighIncome), positive = "1")
 log_cm5
 ```
@@ -124,25 +119,24 @@ log_cm5
 
 #### linear regression model 1
 ```{r}
-# First linear regression to estimate family income with test data set
 linear_mod1 <- lm(FamilyIncome ~ FamilyType + FoodStamp + OwnRent + HouseCosts + Insurance + ElectricBill + NumRooms, data=acs_fit)
 summary(linear_mod1)
 acs_fit$linest_HighIncome <- ifelse(linear_mod1$fit > 250000,1,0)
+linear_mod1_adjR <- summary(linear_mod1)$adj.r.squared
+linear_mod1_aic <- AIC(linear_mod1)
 linear_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 linear_cm1
 ```
 #### linear regression model 2
 ```{r}
-# Created another linear regression to estimate family income with test data set to be used for predicting high income
 linear_mod2 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
 summary(linear_mod2)
 linear_mod2$fitted.values[1:25]
 acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
+linear_mod2_adjR <- summary(linear_mod2)$adj.r.squared
+linear_mod2_aic <- AIC(linear_mod2)
 linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 linear_cm2
-
-# Now test model on acs_test
-
 ```
 # Multilevel Model Specification
 #### lme()
@@ -256,25 +250,24 @@ acs_fit$gamest_HighIncome2 <- ifelse(gam_mod2$fit > .5 ,1,0)
 gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_fit$HighIncome), positive = "1")
 gam_cm2
 ```
-# Regression Model Comparison
+# Regression Model Comparison - List all model's Accuracy, Sensitivity, and 1 additional metric
 ```{r}
 # Display comparison of accuracy of each decision tree 
-sprintf("Linear model 1:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f adj R-squared = %.3f", 
-        linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], 
-        summary(linear_mod1)$adj.r.squared['Adjusted R-squared'])
 
-sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f",linear_cm2$overall['Accuracy'], 
-        linear_cm2$byClass['Sensitivity'])
-sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm1$overall['Accuracy'], 
-        log_cm1$byClass['Sensitivity'])
-sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm2$overall['Accuracy'], 
-        log_cm2$byClass['Sensitivity'])
-sprintf("Logistic model 3: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm3$overall['Accuracy'], 
-        log_cm3$byClass['Sensitivity'])
-sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm4$overall['Accuracy'], 
-        log_cm4$byClass['Sensitivity'])
-sprintf("Logistic model 5: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm5$overall['Accuracy'], 
-        log_cm5$byClass['Sensitivity'])
+sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+        log_cm1$overall['Accuracy'], log_cm1$byClass['Sensitivity'], log_mod1_aic)
+sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+        log_cm2$overall['Accuracy'], log_cm2$byClass['Sensitivity'], log_mod2_aic)
+sprintf("Logistic model 3: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+        log_cm3$overall['Accuracy'], log_cm3$byClass['Sensitivity'], log_mod3_aic)
+sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+        log_cm4$overall['Accuracy'], log_cm4$byClass['Sensitivity'], log_mod4_aic)
+sprintf("Logistic model 5: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+        log_cm5$overall['Accuracy'], log_cm5$byClass['Sensitivity'], log_mod5_aic)
+sprintf("Linear model 1:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
+        linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], linear_mod1_adjR)
+sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
+        linear_cm2$overall['Accuracy'], linear_cm2$byClass['Sensitivity'], linear_mod2_adjR)
 
 ```
 
