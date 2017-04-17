@@ -35,15 +35,15 @@ acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
 acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
 acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
 acs$high_electric <- (acs$ElectricBill > 350) * 1
-# Create binary variable where 1 = not on food stamps & not renting & married
-acs$HI_pred1 <- 0
-acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
-acs$null_model <- 0
 # Break it into a training and test set with an 80/20 split.
 set.seed(447)
 testrecs <- sample(nrow(acs),0.2 * nrow(acs))
 acs_test <- acs[testrecs,]
-acs_fit <- acs[-testrecs,]  
+acs_fit <- acs[-testrecs,]
+# Create binary variable where 1 = not on food stamps & not renting & married
+acs$HI_pred1 <- 0
+acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
+acs$null_model <- 0
 ```
 Let's start by building a *null* model in which you simply predict that everyone's
 income is < 250000 (since the majority of incomes are less than 250000).
@@ -146,11 +146,9 @@ linear_cm2
 
 ```{r}
 library(nlme)
-mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
+mms1 <- lme(fixed = HighIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | Insurance)
 summary(mms1)
 acs_fit$linest_HighIncome <- ifelse(mms1$fit > 250000,1,0)
-#mms1_cm <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-#mms1_cm
 mms1_aic <- AIC(mms1)
 mms1_aic
 ```
@@ -183,10 +181,15 @@ subset(dd_glm1, delta == 0)
 importance(dd_glm1)
 ```
 ```{r}
-acs_fit$linest_HighIncome <- ifelse($fit > 250000,1,0)
-dredge_mod1_aic <- AIC(dd_glm1)
-dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-dredge_cm1
+dredge_mod1 <- lm(HighIncome ~ FamilyType + HouseCosts + Insurance + NumRooms + ElectricBill + FoodStamp + OwnRent + NumBedrooms, data = acs_fit, na.action = na.fail)
+summary(dredge_mod1)
+acs_fit$dredge_HighIncome <- (dredge_mod1$fit > .5) * 1
+dredge_mod1_adjR <- summary(dredge_mod1)$adj.r.squared
+dredge_mod1_aic <- AIC(dredge_mod1)
+#dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+#dredge_cm1
+dredge_mod1_adjR
+dredge_mod1_aic
 ```
 
 
@@ -203,10 +206,10 @@ subset(dd_lm1, delta <5)
 subset(dd_lm1, delta == 0)
 # calculate variable importance weights
 importance(dd_lm1)
-acs_fit$linest_HighIncome <- ifelse($fit > 250000,1,0)
+#acs_fit$linest_HighIncome <- ifelse($fit > 250000,1,0)
 dredge_mod2_aic <- AIC(dd_lm1)
-dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-dredge_cm1
+#dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+#dredge_cm1
 ```
 # Multilevel Model Specification
 #### lme()
@@ -223,9 +226,11 @@ mms1_aic
 ```
 
 ```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, method = "ML", data = acs_fit, random =~ FamilyType | HouseCosts)
+mms2 <- lme(fixed = HighIncome ~ FamilyType, method = "ML", data = acs_fit, random =~ HouseCosts | HouseCosts)
 summary(mms2)
-acs_fit$linest_HighIncome <- ifelse(mms2$fit > 250000,1,0)
+acs_fit$mms2_HighIncome <- ifelse(mms2$fit > 250000,1,0)
+#mms2_cm <- confusionMatrix(as.factor(acs_fit$mms2_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+#mms2_cm
 mms2_aic <- AIC(mms2)
 mms2_aic
 ```
