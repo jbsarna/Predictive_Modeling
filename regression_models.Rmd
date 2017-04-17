@@ -6,6 +6,10 @@ output: html_document
 ---
 
 ```{r}
+acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
+                  header=TRUE, stringsAsFactors=TRUE)
+```
+```{r}
 # Load the necessary libraries
 library(ggplot2)
 library(useful)
@@ -31,15 +35,15 @@ acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
 acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
 acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
 acs$high_electric <- (acs$ElectricBill > 350) * 1
+# Create binary variable where 1 = not on food stamps & not renting & married
+acs$HI_pred1 <- 0
+acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
+acs$null_model <- 0
 # Break it into a training and test set with an 80/20 split.
 set.seed(447)
 testrecs <- sample(nrow(acs),0.2 * nrow(acs))
 acs_test <- acs[testrecs,]
 acs_fit <- acs[-testrecs,]  
-# Create binary variable where 1 = not on food stamps & not renting & married
-acs$HI_pred1 <- 0
-acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
-acs$null_model <- 0
 ```
 Let's start by building a *null* model in which you simply predict that everyone's
 income is < 250000 (since the majority of incomes are less than 250000).
@@ -131,7 +135,6 @@ linear_cm1
 ```{r}
 linear_mod2 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
 summary(linear_mod2)
-linear_mod2$fitted.values[1:25]
 acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
 linear_mod2_adjR <- summary(linear_mod2)$adj.r.squared
 linear_mod2_aic <- AIC(linear_mod2)
@@ -142,36 +145,21 @@ linear_cm2
 #### lme()
 
 ```{r}
-summary(acs_norm2)
-```
-```{r}
 library(nlme)
 mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
 summary(mms1)
+acs_fit$linest_HighIncome <- ifelse(mms1$fit > 250000,1,0)
+#mms1_cm <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+#mms1_cm
+mms1_aic <- AIC(mms1)
+mms1_aic
 ```
 ```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
-summary(mms2)
+#mms2 <- lme(fixed = FamilyIncome ~ Insurance, method = "ML", data = acs_fit, random =~ FamilyType | HouseCosts)
+#summary(mms2)
+#mms1_aic <- AIC(mms1)
+#mms1_aic
 ```
-#### lme()
-
-```{r}
-summary(acs_norm2)
-```
-```{r}
-library(nlme)
-mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
-summary(mms1)
-```
-```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
-summary(mms2)
-```
-Simple linear regressions, and chose this one. I based my decision on sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f", log_cm4$overall['Accuracy'], 
-        log_cm4$byClass['Sensitivity'])R-squared and changes in adjusted R-
-    squared as I added/subtracted variables.
-
-2) Best regression model = linear regression model 2 - based on accuracy at .941 (null model = .9389) and sensitivity at .23277
 
 # MuMIn and the wonders of the dredge() function!
 ### MuMIn package must be installed and library called
@@ -184,7 +172,7 @@ dd_glm1 <- dredge(glm1)
 ```
 ```{r}
 summary(glm1)
-dd_glm1
+head(dd_glm1)
 ```
 ```{r}
 # best supported models
@@ -192,8 +180,15 @@ subset(dd_glm1, delta < 5)
 # best model
 subset(dd_glm1, delta == 0)
 # calculate variable importance weights
-importance(dd_glm1) 
+importance(dd_glm1)
 ```
+```{r}
+acs_fit$linest_HighIncome <- ifelse($fit > 250000,1,0)
+dredge_mod1_aic <- AIC(dd_glm1)
+dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+dredge_cm1
+```
+
 
 
 ### lm dredge
@@ -201,73 +196,110 @@ importance(dd_glm1)
 lm1 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + family_type_cat + FoodStamp + own_home + NumBedrooms + NumRooms, na.action = "na.fail", data=acs_fit)
 dd_lm1 <- dredge(lm1)
 summary(lm1)
-dd_lm1
-```
-```{r}
+head(dd_lm1)
 # best supported models
 subset(dd_lm1, delta <5)
 # best model
 subset(dd_lm1, delta == 0)
 # calculate variable importance weights
-importance(dd_lm1) 
+importance(dd_lm1)
+acs_fit$linest_HighIncome <- ifelse($fit > 250000,1,0)
+dredge_mod2_aic <- AIC(dd_lm1)
+dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+dredge_cm1
 ```
 # Multilevel Model Specification
 #### lme()
 
 ```{r}
-summary(acs_norm2)
-```
-```{r}
 library(nlme)
 mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
-summary(mms1)acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
-linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-linear_cm2
+summary(mms1)
+acs_fit$linest_HighIncome <- ifelse(mms1$fit > 250000,1,0)
+mms1_aic <- AIC(mms1)
+mms1_aic
+#mms1_cm <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+#mms1_cm
+```
+
+```{r}
+mms2 <- lme(fixed = HighIncome ~ FamilyType, method = "ML", data = acs_fit, random =~ FamilyType | HouseCosts)
+summary(mms2)
+acs_fit$linest_HighIncome <- ifelse(mms2$fit > 250000,1,0)
+mms2_aic <- AIC(mms2)
+mms2_aic
 ```
 ```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, data = acs_fit, random =~ FamilyType | HouseCosts)
-summary(mms2)
+library(lme4)
+lmer1 <- lmer(HighIncome ~ 1 + FoodStamp + OwnRent + (1 | FamilyType), data = acs_fit)
+summary(lmer1)
+lmer1_aic <- AIC(lmer1)
+lmer1_aic
 ```
-# GAM
+
+# Generalized Additive Models
 ```{r}
 library(mgcv)
 ```
 
 ```{r}
-gam_mod1 <- gam(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
+gam_mod1 <- gam(FamilyIncome ~ s(Insurance) + s(HouseCosts) + s(ElectricBill) + NumWorkers + FamilyType + 
+                  FoodStamp + OwnRent + NumBedrooms + s(NumChildren) + s(NumRooms) + s(NumPeople) + NumVehicles + 
+                  Language, family=gaussian(link =identity), data=acs_fit)
 summary(gam_mod1)
-gam_mod1$fitted.values[1:25]
 acs_fit$gamest_HighIncome <- ifelse(gam_mod1$fit > 250000,1,0)
+gam_mod1_adjR <- summary(gam_mod1)$r.sq
+gam_mod1_aic <- AIC(gam_mod1)
 gam_cm1 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 gam_cm1
-# Simply proved that linear vs non-linear has same accuracy
+gam_mod1_aic
 ```
 ```{r}
-gam_mod2 <- gam(HighIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit, family=binomial(link="logit"))
+gam_mod2 <- gam(HighIncome ~ s(Insurance) + s(HouseCosts) + s(ElectricBill) + NumWorkers + FamilyType + FoodStamp + 
+                  OwnRent + NumBedrooms + s(NumChildren) + s(NumRooms) + s(NumPeople) + NumVehicles + Language, 
+                data = acs_fit, family=binomial(link=logit))
 summary(gam_mod2)
-gam_mod2$fitted.values[1:25]
+gam_mod2_adjR <- summary(gam_mod2)$r.sq
+gam_mod2_aic <- AIC(gam_mod2)
 acs_fit$gamest_HighIncome2 <- ifelse(gam_mod2$fit > .5 ,1,0)
 gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_fit$HighIncome), positive = "1")
 gam_cm2
+gam_mod2_adjR
+gam_mod2_aic
 ```
+
 # Regression Model Comparison - List all model's Accuracy, Sensitivity, and 1 additional metric
 ```{r}
 # Display comparison of accuracy of each decision tree 
 
-sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm1$overall['Accuracy'], log_cm1$byClass['Sensitivity'], log_mod1_aic)
-sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm2$overall['Accuracy'], log_cm2$byClass['Sensitivity'], log_mod2_aic)
-sprintf("Logistic model 3: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+sprintf("Logistic model 3: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm3$overall['Accuracy'], log_cm3$byClass['Sensitivity'], log_mod3_aic)
-sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm4$overall['Accuracy'], log_cm4$byClass['Sensitivity'], log_mod4_aic)
-sprintf("Logistic model 5: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.3f", 
+sprintf("Logistic model 5: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm5$overall['Accuracy'], log_cm5$byClass['Sensitivity'], log_mod5_aic)
+sprintf("GAM model 1:      Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+        gam_cm1$overall['Accuracy'], gam_cm1$byClass['Sensitivity'], gam_mod1_aic)
+sprintf("GAM model 2:      Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+        gam_cm2$overall['Accuracy'], gam_cm2$byClass['Sensitivity'], gam_mod2_aic)
+
+sprintf("MMS model 1:      Predicted Accuracy = NA    Predicted Sensitivity = NA    AIC = %.1f", mms1_aic)
+
 sprintf("Linear model 1:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
         linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], linear_mod1_adjR)
 sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
         linear_cm2$overall['Accuracy'], linear_cm2$byClass['Sensitivity'], linear_mod2_adjR)
+
+```
+
+# Choose best model(s) and display formula
+
+```{r}
+formula(gam_mod2)
 
 ```
 

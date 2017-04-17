@@ -6,6 +6,11 @@ output: html_document
 ---
 
 ```{r}
+acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
+                  header=TRUE, stringsAsFactors=TRUE)
+```
+
+```{r}
 # Load the necessary libraries
 library(ggplot2)
 library(useful)
