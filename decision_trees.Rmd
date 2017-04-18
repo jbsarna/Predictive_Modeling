@@ -6,9 +6,12 @@ output: html_document
 ---
 
 ```{r}
+# read in the data
 acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
                   header=TRUE, stringsAsFactors=TRUE)
 ```
+
+# Create some new variables based on EDA
 
 ```{r}
 # Load the necessary libraries
@@ -25,98 +28,190 @@ library(MuMIn)
 library(caret)
 library(dplyr)
 library(RColorBrewer)
-```
-# Create some new variables based on EDA
-```{r}
+library(randomForest)
+
 # code from hw4 to be used for creating additional models
 acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
 acs$foodstamp_binary <- ifelse(acs$FoodStamp == "Yes",1,0) # (yes = 1, no = 0)
 acs$own_home <- ifelse(acs$OwnRent == "Rented",0, ifelse(acs$FamilyIncome == "Mortgage",1,2)) # (own = 1, rent = 0)
 acs$family_type_cat <- ifelse(acs$FamilyType == "Married",1, ifelse(acs$FamilyIncome == "Female Head",2,3))
+
 # married = 1, male head = 2, female head = 3
 acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
 acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
 acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
 acs$high_electric <- (acs$ElectricBill > 350) * 1
+
 # Break it into a training and test set with an 80/20 split.
 set.seed(447)
 testrecs <- sample(nrow(acs),0.2 * nrow(acs))
 acs_test <- acs[testrecs,]
 acs_fit <- acs[-testrecs,]  
+
 # Create binary variable where 1 = not on food stamps & not renting & married
 acs$HI_pred1 <- 0
 acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
 acs$null_model <- 0
 ```
 # DECISION TREES
+
 1) Specify model
-2) use rplot with model as specified
-3) Show head of tree prediction probabilities
-4) Show head of tree predictions as binary
+2) use rplot with model as specified 
+3) Show head of tree prediction probabilities (commented out)
+4) Show head of tree predictions as binary (commented out)
 5) Create variable as a Confusion matrix for tree
 6) Display confusion matrix
+7) Residual analysis (looking for mean near 0)
 
 #### Decision tree 1
+
 ```{r}
-tree1 <- rpart(HighIncome ~ FamilyType + HouseCosts + NumWorkers2 + OwnRent + Insurance + NumWorkers2 + YearBuilt + NumBedrooms, 
-               data=acs_fit, method="class")
+tree1 <- rpart(HighIncome ~ FamilyType + HouseCosts + NumWorkers2 + OwnRent + Insurance + NumWorkers2 + 
+                 YearBuilt + NumBedrooms, data=acs_fit, method="class")
+
 rpart.plot(tree1)
-head(predict(tree1))
-head(predict(tree1, type="class"))
+
+##head(predict(tree1))
+##head(predict(tree1, type="class"))
+
 tree1_cm <- confusionMatrix(predict(tree1, type="class"), acs_fit$HighIncome, positive = "1")
 tree1_cm
+
 # Residual analysis
 summary(acs_test$HighIncome - predict(tree1,newdata=acs_test))
 ```
 #### Decision tree 2
+
 ```{r}
-tree2 <- rpart(HighIncome ~ FoodStamp + Insurance + FamilyType, data=acs_fit, method="class", control=rpart.control(minsplit=2, cp=0))
+tree2 <- rpart(HighIncome ~ FoodStamp + Insurance + FamilyType, data=acs_fit, method="class", 
+               control=rpart.control(minsplit=2, cp=0))
+
 rpart.plot(tree2)
-head(predict(tree2))
-head(predict(tree2, type="class"))
+
+##head(predict(tree2))
+##head(predict(tree2, type="class"))
+
 tree2_cm <- confusionMatrix(predict(tree2, type="class"), acs_fit$HighIncome, positive = "1")
 tree2_cm
+
 # Residual analysis
 summary(acs_test$HighIncome - predict(tree2,newdata=acs_test))
 ```
 #### Decision tree 3
 ```{r}
-tree3 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts, data=acs_fit, method="class", control=rpart.control(minsplit=2,
-            cp=.005))
+tree3 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts, data=acs_fit, method="class", 
+               control=rpart.control(minsplit=2, cp=.005))
+
 rpart.plot(tree3)
-head(predict(tree3))
-head(predict(tree3, type="class"))
+
+##head(predict(tree3))
+##head(predict(tree3, type="class"))
+
 tree3_cm <- confusionMatrix(predict(tree3, type="class"), acs_fit$HighIncome, positive = "1")
 tree3_cm
+
 # Residual analysis
 summary(acs_test$HighIncome - predict(tree3,newdata=acs_test))
 ```
 #### Decision tree 4
 ```{r}
-tree4 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms + NumChildren + NumPeople + NumRooms + NumVehicles +
-                 NumWorkers + FoodStamp + OwnRent + ElectricBill + HouseCosts, data=acs_fit, method="class",
-                 control=rpart.control(minsplit=2, cp=0))
+tree4 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms + NumChildren + 
+                 NumPeople + NumRooms + NumVehicles + NumWorkers + FoodStamp + OwnRent + ElectricBill + 
+                 HouseCosts, data=acs_fit, method="class", control=rpart.control(minsplit=2, cp=0))
+
 rpart.plot(tree4)
-head(predict(tree4))
-head(predict(tree4, type="class"))
+
+##head(predict(tree4))
+##head(predict(tree4, type="class"))
+
 tree4_cm <- confusionMatrix(predict(tree4, type="class"), acs_fit$HighIncome, positive = "1")
 tree4_cm
+
 # Residual analysis
 summary(acs_test$HighIncome - predict(tree4,newdata=acs_test))
 ```
 #### Decision tree 5
 ```{r}
-tree5 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumWorkers2, data=acs_fit, method="class", control=rpart.control(minsplit=2,
-            cp=.0025))
+tree5 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumWorkers2, data=acs_fit, 
+               method="class", control=rpart.control(minsplit=2, cp=.0025))
+
 rpart.plot(tree5)
-head(predict(tree5))
-head(predict(tree5, type="class"))
+
+##head(predict(tree5))
+##head(predict(tree5, type="class"))
+
 tree5_cm <- confusionMatrix(predict(tree5, type="class"), acs_fit$HighIncome, positive = "1")
 tree5_cm
+
 # Residual analysis
 summary(acs_test$HighIncome - predict(tree5,newdata=acs_test))
 ```
+# "Random" Bagged Forests
+
+#### specify model and view
+```{r}
+rand_bag1 <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
+                          importance = TRUE, na.action = na.omit)
+```
+
+```{r}
+rand_bag1
+```
+
+```{r}
+# plot model
+plot(rand_bag1)
+```
+#### Paper or plastic? Time to bag using fit data
+
+1) Predict using model on fit data set
+2) Display tail of predictions for visual inspection
+3) Transform prediction probability to binary 1 or 0 based on criteria prob > .5
+4) Create confusion matrix
+5) Display confusion matrix
+6) Residual analysis
+
+```{r}
+bag1_fit <- predict(rand_bag1, acs_fit, type="class" )
+
+tail(bag1_fit)
+
+acs_fit$HighIncome_bag <- ifelse(bag1_fit > .5,1,0)
+
+bag_cm1_fit <- confusionMatrix(acs_fit$HighIncome_bag, acs_fit$HighIncome, positive = "1")
+
+bag_cm1_fit
+
+# Residual analysis
+summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_fit))
+``` 
+
+#### Predict using model on test data
+
+1) Make predictions
+2) Transform prediction probability to binary 1 or 0 based on criteria prob > .5
+3) Create confusion matrix
+4) Display confusion matrix
+5) Residual analysis
+
+```{r}
+bag1_pred <- predict(rand_bag1, acs_test, type="class" )
+
+acs_test$HighIncome_bag <- ifelse(bag1_pred > .5,1,0)
+
+bag_cm1_pred <- confusionMatrix(acs_test$HighIncome_bag, acs_test$HighIncome, positive = "1")
+
+bag_cm1_pred
+
+# Residual analysis
+summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_test))
+```
+
 ## Tree Comparison
+
+1) Make predictions using test data
+2) Confusion matrix
+3) Display all models for comparison
 
 ```{r}
 # make predictions using test data
@@ -134,7 +229,7 @@ tree_cm4_pred <- confusionMatrix(tree4_pred, acs_test$HighIncome, positive = "1"
 tree_cm5_pred <- confusionMatrix(tree5_pred, acs_test$HighIncome, positive = "1")
 
 # Display comparison of accuracy of each decision tree - Finish updating this section for final output
-sprintf("                        The no information rate = %.4f                              ", tree1_cm$overall[5])
+sprintf("The no information rate = %.4f", tree1_cm$overall[5])
 sprintf("Tree1: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree1_cm$overall['Accuracy'], 
         tree_cm1_pred$overall['Accuracy'], tree_cm1_pred$byClass['Sensitivity'])
 sprintf("Tree2: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree2_cm$overall['Accuracy'], 
@@ -145,67 +240,24 @@ sprintf("Tree4: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitiv
         tree_cm4_pred$overall['Accuracy'], tree_cm4_pred$byClass['Sensitivity'])
 sprintf("Tree5: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree5_cm$overall['Accuracy'], 
         tree_cm5_pred$overall['Accuracy'], tree_cm5_pred$byClass['Sensitivity'])
+sprintf("Bag1:  Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",bag_cm1_fit$overall['Accuracy'], 
+        bag_cm1_pred$overall['Accuracy'], bag_cm1_pred$byClass['Sensitivity'])
 ```
 
 
-## Decision Tree Decision
+# Decision Tree Decision
+
 1) Highest fit accuracy does not result in in most accurate predictions - Model 4 is a prime example of overfitting
   a) Model 4 has nearly perfect fit accuracy
   b) Model 4 also has the worst prediction accuracy coupled with highest sensitivity
+
 2) Model 5 is a close contender to model 3 - they have the highest predicted accuracies with "low" sensitivities
-3) I would choose Tree 3 for two reasons
+
+3) I would choose Tree 3 for three reasons over all other decision trees
     a) First, it has highest prediction accuracy at .9426
     b) Second, it has the second lowest sensitivity at .1471
-    
-# Random Forests
-
-```{r}
-library(randomForest)
-```
-
-```{r}
-randtree_mod1 <- randomForest(x=acs_fit[3:18], 
-                              y=acs_fit$FamilyIncome,
-                              ntree=50,
-                              nodesize = 7,
-                              importance=T)
-```
-```{r}
-randtree_mod1
-plot(randtree_mod1)
-```
-```{r}
-rand_bag1 <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
-                          importance = TRUE, na.action = na.omit)
-```
-
-```{r}
-rand_bag1
-#head(rand_bag1)
-```
-```{r}
-plot(rand_bag1)
-```
-```{r}
-bag1_fit <- predict(rand_bag1, acs_fit, type="class" )
-tail(bag1_fit)
-acs_fit$HighIncome_bag <- 0
-acs_fit$HighIncome_bag <- ifelse(bag1_fit > .5,1,0)
-bag_cm1_fit <- confusionMatrix(acs_fit$HighIncome_bag, acs_fit$HighIncome, positive = "1")
-bag_cm1_fit
-# Residual analysis
-summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_fit))
-``` 
-```{r}
-bag1_pred <- predict(rand_bag1, acs_test, type="class" )
-tail(bag1_pred)
-acs_test$HighIncome_bag <- 0
-acs_test$HighIncome_bag <- ifelse(bag1_pred > .5,1,0)
-bag_cm1 <- confusionMatrix(acs_test$HighIncome_bag, acs_test$HighIncome, positive = "1")
-bag_cm1
-# Residual analysis
-summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_test))
-```
-
-
-#stopped here!
+    c) Thirdl, the predicted accuracy is the same as the fit accuracy (did not decrease once tested)
+4) FINAL DECISION
+    a) Bag tree 1 has the highest predicted accuracy.
+    b) Interestingly, bag 1 had pretty low fit accuracy BUT the highest predicted accuracy
+    c) Slight concern - bag 1 sensitivity jumped very high from fit to test

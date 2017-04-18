@@ -23,6 +23,9 @@ library(rpart.plot)
 library(class)
 library(MuMIn)
 library(caret)
+library(dplyr)
+library(RColorBrewer)
+library(randomForest)
 ```
 # Create some new variables based on EDA
 ```{r}
