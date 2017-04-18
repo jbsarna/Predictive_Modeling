@@ -277,6 +277,7 @@ gam_mod2_aic
 ```{r}
 # Display comparison of accuracy of each decision tree 
 
+sprintf("                       The no information rate = %.3f                              ", log_cm1$overall[5])
 sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm1$overall['Accuracy'], log_cm1$byClass['Sensitivity'], log_mod1_aic)
 sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 

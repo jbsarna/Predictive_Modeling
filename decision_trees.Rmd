@@ -94,7 +94,16 @@ head(predict(tree4, type="class"))
 tree4_cm <- confusionMatrix(predict(tree4, type="class"), acs_fit$HighIncome, positive = "1")
 tree4_cm
 ```
-
+#### Decision tree 5
+```{r}
+tree5 <- rpart(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumWorkers2, data=acs_fit, method="class", control=rpart.control(minsplit=2,
+            cp=.0025))
+rpart.plot(tree5)
+head(predict(tree5))
+head(predict(tree5, type="class"))
+tree5_cm <- confusionMatrix(predict(tree5, type="class"), acs_fit$HighIncome, positive = "1")
+tree5_cm
+```
 ## Tree Comparison
 
 ```{r}
@@ -103,44 +112,35 @@ tree1_pred <- predict(tree1, acs_test, type="class" )
 tree2_pred <- predict(tree2, acs_test, type="class" ) 
 tree3_pred <- predict(tree3, acs_test, type="class" ) 
 tree4_pred <- predict(tree4, acs_test, type="class" )
+tree5_pred <- predict(tree5, acs_test, type="class" )
 
 # Confusion matrices
 tree_cm1_pred <- confusionMatrix(tree1_pred, acs_test$HighIncome, positive = "1")
 tree_cm2_pred <- confusionMatrix(tree2_pred, acs_test$HighIncome, positive = "1")
 tree_cm3_pred <- confusionMatrix(tree3_pred, acs_test$HighIncome, positive = "1")
 tree_cm4_pred <- confusionMatrix(tree4_pred, acs_test$HighIncome, positive = "1")
+tree_cm5_pred <- confusionMatrix(tree5_pred, acs_test$HighIncome, positive = "1")
 
 # Display comparison of accuracy of each decision tree - Finish updating this section for final output
-sprintf("Tree1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f",tree1_cm$overall['Accuracy'], 
-        tree_cm1_pred$byClass['Sensitivity'])
-sprintf("Tree2: Fit acc = %.3f Pred acc = %.3f",tree2_cm$overall['Accuracy'], tree_cm2_pred$overall['Accuracy'])
-sprintf("Tree3: Fit acc = %.3f Pred acc = %.3f",tree3_cm$overall['Accuracy'], tree_cm3_pred$overall['Accuracy'])
-sprintf("Tree4: Fit acc = %.3f Pred acc = %.3f",tree4_cm$overall['Accuracy'], tree_cm4_pred$overall['Accuracy'])
-```
-```{r}
-sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm1_pred$overall['Accuracy'], 
-        tree_cm1_pred$byClass['Sensitivity'])
-sprintf("Tree2: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm2_pred$overall['Accuracy'], 
-        tree_cm2_pred$byClass['Sensitivity'])
-sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm3_pred$overall['Accuracy'], 
-        tree_cm3_pred$byClass['Sensitivity'])
-sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm4_pred$overall['Accuracy'], 
-        tree_cm4_pred$byClass['Sensitivity'])
+sprintf("                        The no information rate = %.4f                              ", tree1_cm$overall[5])
+sprintf("Tree1: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree1_cm$overall['Accuracy'], 
+        tree_cm1_pred$overall['Accuracy'], tree_cm1_pred$byClass['Sensitivity'])
+sprintf("Tree2: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree2_cm$overall['Accuracy'], 
+        tree_cm2_pred$overall['Accuracy'], tree_cm2_pred$byClass['Sensitivity'])
+sprintf("Tree3: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree3_cm$overall['Accuracy'], 
+        tree_cm3_pred$overall['Accuracy'], tree_cm3_pred$byClass['Sensitivity'])
+sprintf("Tree4: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree4_cm$overall['Accuracy'], 
+        tree_cm4_pred$overall['Accuracy'], tree_cm4_pred$byClass['Sensitivity'])
+sprintf("Tree5: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree5_cm$overall['Accuracy'], 
+        tree_cm5_pred$overall['Accuracy'], tree_cm5_pred$byClass['Sensitivity'])
 ```
 
-Here is code for above
-sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm1_pred$overall['Accuracy'], 
-        tree_cm1_pred$byClass['Sensitivity'])
-sprintf("Tree2: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm2_pred$overall['Accuracy'], 
-        tree_cm2_pred$byClass['Sensitivity'])
-sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm3_pred$overall['Accuracy'], 
-        tree_cm3_pred$byClass['Sensitivity'])
-sprintf("Tree1: Fit Accuracy = %.3f Pred acc = %.3f Predicted Sensitivity = %.3f",tree_cm4_pred$overall['Accuracy'], 
-        tree_cm4_pred$byClass['Sensitivity'])
 
 ## Decision Tree Decision
-
-1) At first glance tree 4 would appear the best choice. However, this tree has a nearly 100% accuracy in the fit data BUT the lowest 
-    prediction accuracy. This can be seen through its extreme complexity which leads to a .99 sensitivity. This is like overfitting 
-    that leads to "garbage" predictions unless the samples are nearly identical
-2) I would choose Tree 3 for two reasons - First, it has highest prediction accuracy. Second, it has a pretty low sensitivity at .14
+1) Highest fit accuracy does not result in in most accurate predictions - Model 4 is a prime example of overfitting
+  a) Model 4 has nearly perfect fit accuracy
+  b) Model 4 also has the worst prediction accuracy coupled with highest sensitivity
+2) Model 5 is a close contender to model 3 - they have the highest predicted accuracies with "low" sensitivities
+3) I would choose Tree 3 for two reasons
+    a) First, it has highest prediction accuracy at .9426
+    b) Second, it has the second lowest sensitivity at .1471
