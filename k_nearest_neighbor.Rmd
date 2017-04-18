@@ -6,9 +6,14 @@ output: html_document
 ---
 
 ```{r}
+# read in the data
 acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
                   header=TRUE, stringsAsFactors=TRUE)
 ```
+
+# Create some new variables based on EDA
+a) This chunk of code is the same for all pages in this R-project
+b) It is included in each rmd file so that you can examine each predictive method individually
 
 ```{r}
 # Load the necessary libraries
@@ -23,32 +28,37 @@ library(rpart.plot)
 library(class)
 library(MuMIn)
 library(caret)
-```
-# Create some new variables based on EDA
-```{r}
+
 # code from hw4 to be used for creating additional models
 acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
 acs$foodstamp_binary <- ifelse(acs$FoodStamp == "Yes",1,0) # (yes = 1, no = 0)
 acs$own_home <- ifelse(acs$OwnRent == "Rented",0, ifelse(acs$FamilyIncome == "Mortgage",1,2)) # (own = 1, rent = 0)
 acs$family_type_cat <- ifelse(acs$FamilyType == "Married",1, ifelse(acs$FamilyIncome == "Female Head",2,3))
+
 # married = 1, male head = 2, female head = 3
 acs$InsuranceHigh <- (acs$Insurance > 1000) * 1
 acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
 acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
 acs$high_electric <- (acs$ElectricBill > 350) * 1
+
 # Break it into a training and test set with an 80/20 split.
 set.seed(447)
 testrecs <- sample(nrow(acs),0.2 * nrow(acs))
 acs_test <- acs[testrecs,]
 acs_fit <- acs[-testrecs,]  
+
 # Create binary variable where 1 = not on food stamps & not renting & married
 acs$HI_pred1 <- 0
 acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
 acs$null_model <- 0
 ```
+
 # k-nearest neighbor
+a) k-nearest neighbor can only take numerical data
+b) It is recommended (in most all cases) to normalize the data set
 
 ## First Normalize the dataset
+
 ```{r}
 # function to normalize data
 normalize <- function(x) {
@@ -57,21 +67,24 @@ denom <- max(x) - min(x)
 return (num/denom)
 }
 ```
+
 ```{r}
-# normalize new data frame
+# create and normalize a new data frame for knn analysis
 acs_numericals <- data.frame(acs$NumBedrooms, acs$NumChildren, acs$NumPeople, acs$NumRooms, acs$NumVehicles, acs$NumWorkers, acs$HouseCosts, acs$ElectricBill, acs$Insurance)
 acs_norm <- as.data.frame(lapply(acs_numericals[1:8], normalize))
 acs_norm$HighIncome1 <- c(acs$HighIncome)
 ```
+
 ## Split data frame into learn and validate subsets
+1) Count nunber of rows
+2) Create index of random row numbers for validation set
+3) Create the learning and validate data sets
+
 ```{r}
-# Count rows
 m <- nrow(acs_numericals)
 
-# Create index of random row nums for the validation set
 val <- sample(1:m, size = round(m/3))
 
-# Create the learning and validation sets
 acsNorm_learn <- acs_norm[-val,]
 acsNorm_valid <- acs_norm[val,]
 ```
@@ -83,15 +96,14 @@ summary(acs_norm)
 ## knn method
 
 1) specify knn model
-2) classification matrix and visualization
-3) confusion matrix
+2) create a visualization
+3) create a confusion matrix
 
 #### knn 1
 
 ```{r}
 acs_knn1 <- knn(acsNorm_learn[,1:8], acsNorm_valid[,1:8], acsNorm_learn$HighIncome1, k=5, prob = TRUE)
-head(acs_knn1)
-table(acsNorm_valid$HighIncome1, acs_knn1)
+##head(acs_knn1)
 
 pcol1 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol1, col = c("green3", "red")
@@ -102,10 +114,10 @@ knn1_cm_pred
 ```
 
 #### knn 2
+
 ```{r}
 acs_knn2 <- knn(acsNorm_learn[,1:4], acsNorm_valid[,1:4], acsNorm_learn$HighIncome, k=5, prob = TRUE)
-head(acs_knn2)
-table(acsNorm_valid$HighIncome, acs_knn2)
+##head(acs_knn2)
 
 pcol2 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[2:5], pch = pcol2, col = c("green3", "red")
@@ -119,8 +131,7 @@ knn2_cm_pred
 
 ```{r}
 acs_knn3 <- knn(acsNorm_learn[,6:8], acsNorm_valid[,6:8], acsNorm_learn$HighIncome, k=3, prob = TRUE)
-head(acs_knn3)
-table(acsNorm_valid$HighIncome, acs_knn3)
+##head(acs_knn3)
 
 pcol3 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[6:8], pch = pcol3, col = c("green3", "red")
@@ -134,8 +145,7 @@ knn3_cm_pred
 
 ```{r}
 acs_knn4 <- knn(acsNorm_learn[,1:8], acsNorm_valid[,1:8], acsNorm_learn$HighIncome, k=10, prob = TRUE)
-head(acs_knn4)
-table(acsNorm_valid$HighIncome, acs_knn4)
+##head(acs_knn4)
 
 pcol4 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol4, col = c("green3", "red")
@@ -149,8 +159,8 @@ knn4_cm_pred
 
 ```{r}
 acs_knn5 <- knn(acsNorm_learn[,1:8], acsNorm_valid[,1:8], acsNorm_learn$HighIncome, k=25, prob = TRUE)
-head(acs_knn5)
-table(acsNorm_valid$HighIncome, acs_knn5)
+
+#head(acs_knn5)
 
 pcol5 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol5, col = c("green3", "red")
@@ -164,10 +174,9 @@ knn5_cm_pred
 
 ```{r}
 acs_knn6 <- knn(acsNorm_learn[,1:8], acsNorm_valid[,1:8], acsNorm_learn$HighIncome, k=50, prob = TRUE)
-head(acs_knn6)
-table(acsNorm_valid$HighIncome, acs_knn6)
-
+##head(acs_knn6)
 pcol6 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
+
 pairs(acsNorm_valid[1:8], pch = pcol6, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn6)+1])
 
@@ -176,10 +185,12 @@ knn6_cm_pred
 ```
 
 ## Compare all knn models in one output
+## Summary Output of each model for comparison - Displayed values are for the test data set
+How well did each model do compared to the others?
 
 ```{r}
-# Display comparison of accuracy of each decision tree - Finish updating this section for final output
-sprintf("                        The no information rate = %.4f                              ", knn1_cm_pred$overall[5])
+# Display comparison of accuracy of each decision tree
+sprintf("The no information rate = %.4f", knn1_cm_pred$overall[5])
 sprintf("Knn 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn1_cm_pred$overall['Accuracy'], 
         knn1_cm_pred$byClass['Sensitivity'])
 sprintf("Knn 2: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn2_cm_pred$overall['Accuracy'], 
@@ -198,10 +209,13 @@ sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm
 
 ## K nearest neighbor decision
 
-1) As I increase k the accuract increases until I chose k = 50. I could continue to repeat this property or (loop) to find the best 
-    k value where change in accuracy = 0 (first derivative of the function).
+1) I would choose knn model 6 because highest (tested) accuracy with a "relatively" low sensitivity
 
-2) One thing to be carefule of is that the higher the k value the more complex the "outline" of the determinations.
+2) As I increase k the accuracy increases until I chose k = 50. One could continue to repeat this process or (loop) to 
+    find the best exact k value where change in accuracy = 0 (first derivative of the function).
 
-3) I would also think it be valuable to change the variables included in knn. I only did this with two sets of variables, and mostly
-    focused on changing the size of k.
+3) One thing to be carefule of is that the higher the k value the more complex the "outline" of the determinations. This 
+    could lead to a "garbage" model (as I call it)
+
+4) I would also think it be valuable to change the variables included in knn. I only did this with two sets of variables, 
+    and mostly focused on changing the size of k. You could spend much more time tweaking independent variable combinations

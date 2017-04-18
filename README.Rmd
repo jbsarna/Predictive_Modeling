@@ -1,0 +1,26 @@
+---
+title: "README"
+author: "Justin Sarna"
+date: "April 18, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Predictive Modeling Project
+
+## Background Information
+1) Don't worry if a code chunk takes a some time to execute. I only included models/code that would execute in less than
+    1 minute
+
+### Understanding my code format/style
+1) # = comments
+2) ## = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
+
+## Steps/Procedures to work through this R-project
+
+## Closing thoughts
+
+## My best model!
