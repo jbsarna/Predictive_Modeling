@@ -50,6 +50,14 @@ acs$null_model <- 0
 # Cluster Analysis
 
 ```{r}
+normalize <- function(x) {
+num <- x - min(x)
+denom <- max(x) - min(x)
+return (num/denom)
+}
+```
+
+```{r}
 acs_numericals2 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance)
 acs_norm2 <- as.data.frame(lapply(acs_numericals2[1:3], normalize))
 #acs_norm2$HighIncome1 <- c(acs$HighIncome)
@@ -82,5 +90,29 @@ print_clusters <- function(labels,k){
 }
 ```
 ```{r}
-print_clusters(groups, 5)
+# Model Based Clustering
+library(mclust)
+fit <- Mclust(acs_norm2)
+plot(fit) # plot results
+summary(fit) # display the best model 
+```
+```{r}
+# K-Means Clustering with 5 clusters
+fit <- kmeans(mydata, 5)
+
+# Cluster Plot against 1st 2 principal components
+
+# vary parameters for most readable graph
+library(cluster)
+clusplot(acs_norm2, fit$cluster, color=TRUE, shade=TRUE,
+   labels=2, lines=0)
+
+# Centroid Plot against 1st 2 discriminant functions
+library(fpc)
+plotcluster(acs_norm2, fit$cluster) 
+```
+
+```{r}
+table(groups)
+#print_clusters(groups, 5)
 ```
