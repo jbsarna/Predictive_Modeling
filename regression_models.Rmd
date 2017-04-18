@@ -307,6 +307,7 @@ gam_mod1_aic <- AIC(gam_mod1)
 gam_cm1 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 gam_cm1
 gam_mod1_aic
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(gam_mod1,newdata=acs_test))
 ```

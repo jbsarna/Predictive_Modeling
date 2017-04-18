@@ -175,7 +175,7 @@ randtree_mod1
 plot(randtree_mod1)
 ```
 ```{r}
-rand_bag1 <- randomForest(FamilyIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
+rand_bag1 <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
                           importance = TRUE, na.action = na.omit)
 ```
 
@@ -185,16 +185,27 @@ rand_bag1
 ```
 ```{r}
 plot(rand_bag1)
-#bag1_pred <- predict(rand_bag1, acs_fit, type="class" )
-#acs_fit$HighIncome_bag <- ifelse(bag1_pred$predicted > 250000,1,0)
-#bag_cm1 <- confusionMatrix(bag1_pred, acs_fit$HighIncome_bag, positive = "1")
-#bag_cm1
+```
+```{r}
+bag1_fit <- predict(rand_bag1, acs_fit, type="class" )
+tail(bag1_fit)
+acs_fit$HighIncome_bag <- 0
+acs_fit$HighIncome_bag <- ifelse(bag1_fit > .5,1,0)
+bag_cm1_fit <- confusionMatrix(acs_fit$HighIncome_bag, acs_fit$HighIncome, positive = "1")
+bag_cm1_fit
+# Residual analysis
+summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_fit))
+``` 
+```{r}
+bag1_pred <- predict(rand_bag1, acs_test, type="class" )
+tail(bag1_pred)
+acs_test$HighIncome_bag <- 0
+acs_test$HighIncome_bag <- ifelse(bag1_pred > .5,1,0)
+bag_cm1 <- confusionMatrix(acs_test$HighIncome_bag, acs_test$HighIncome, positive = "1")
+bag_cm1
+# Residual analysis
+summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_test))
 ```
 
+
 #stopped here!
-```{r}
-acs_fit$rand_tree1_pred <- predict(randtree_mod1, acs_fit, type="class" )
-acs_fit$rand_tree1_pred <- ifelse(acs_fit$rand_tree1_pred > 250000,1,0)
-rand_tree_cm1_pred <- confusionMatrix(acs_fit$rand_tree1_pred, acs_fit$HighIncome, positive = "1")
-#accuracyMeasures(predict(randtree_mod1, newdata=acs_fit, acs_fit$HighIncome == 'FamilyIncome', name='random forest, train')
-```

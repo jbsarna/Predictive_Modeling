@@ -100,4 +100,8 @@ gam_cluster_cm
 gam_cluster_adjR
 gam_cluster_aic
 ```
+```{r}
+cluster_pred <- predict(gam_mod_cluster, acsNorm2_valid, type="class" )
+```
+
 
