@@ -97,8 +97,8 @@ pcol1 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol1, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn1)+1])
 
-knn1_cm1_pred <- confusionMatrix(acs_knn1, acsNorm_valid$HighIncome, positive = "1")
-knn1_cm1_pred
+knn1_cm_pred <- confusionMatrix(acs_knn1, acsNorm_valid$HighIncome, positive = "1")
+knn1_cm_pred
 ```
 
 #### knn 2
@@ -111,8 +111,8 @@ pcol2 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[2:5], pch = pcol2, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn2)+1])
 
-knn2_cm2_pred <- confusionMatrix(acs_knn2, acsNorm_valid$HighIncome, positive = "1")
-knn2_cm2_pred
+knn2_cm_pred <- confusionMatrix(acs_knn2, acsNorm_valid$HighIncome, positive = "1")
+knn2_cm_pred
 ```
 
 #### knn 3
@@ -126,8 +126,8 @@ pcol3 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[6:8], pch = pcol3, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn3)+1])
 
-knn3_cm3_pred <- confusionMatrix(acs_knn3, acsNorm_valid$HighIncome, positive = "1")
-knn3_cm3_pred
+knn3_cm_pred <- confusionMatrix(acs_knn3, acsNorm_valid$HighIncome, positive = "1")
+knn3_cm_pred
 ```
 
 #### knn 4
@@ -141,8 +141,8 @@ pcol4 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol4, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn4)+1])
 
-knn4_cm4_pred <- confusionMatrix(acs_knn4, acsNorm_valid$HighIncome, positive = "1")
-knn4_cm4_pred
+knn4_cm_pred <- confusionMatrix(acs_knn4, acsNorm_valid$HighIncome, positive = "1")
+knn4_cm_pred
 ```
 
 #### knn 5
@@ -156,8 +156,8 @@ pcol5 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol5, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn5)+1])
 
-knn5_cm5_pred <- confusionMatrix(acs_knn5, acsNorm_valid$HighIncome, positive = "1")
-knn5_cm5_pred
+knn5_cm_pred <- confusionMatrix(acs_knn5, acsNorm_valid$HighIncome, positive = "1")
+knn5_cm_pred
 ```
 
 #### knn 6
@@ -171,12 +171,29 @@ pcol6 <- as.character(as.numeric(acsNorm_valid$HighIncome1))
 pairs(acsNorm_valid[1:8], pch = pcol6, col = c("green3", "red")
   [(acsNorm_valid$HighIncome1 != acs_knn6)+1])
 
-knn6_cm6_pred <- confusionMatrix(acs_knn6, acsNorm_valid$HighIncome, positive = "1")
-knn6_cm6_pred
+knn6_cm_pred <- confusionMatrix(acs_knn6, acsNorm_valid$HighIncome, positive = "1")
+knn6_cm_pred
 ```
+
 ## Compare all knn models in one output
+
 ```{r}
-# add comparisons here
+# Display comparison of accuracy of each decision tree - Finish updating this section for final output
+sprintf("                        The no information rate = %.4f                              ", knn1_cm_pred$overall[5])
+sprintf("Knn 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn1_cm_pred$overall['Accuracy'], 
+        knn1_cm_pred$byClass['Sensitivity'])
+sprintf("Knn 2: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn2_cm_pred$overall['Accuracy'], 
+        knn2_cm_pred$byClass['Sensitivity'])
+sprintf("Knn 3: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn3_cm_pred$overall['Accuracy'], 
+        knn3_cm_pred$byClass['Sensitivity'])
+sprintf("Knn 4: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn4_cm_pred$overall['Accuracy'], 
+        knn4_cm_pred$byClass['Sensitivity'])
+sprintf("Knn 5: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn5_cm_pred$overall['Accuracy'], 
+        knn5_cm_pred$byClass['Sensitivity'])
+sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm_pred$overall['Accuracy'], 
+        knn6_cm_pred$byClass['Sensitivity'])
+
+
 ```
 
 ## K nearest neighbor decision

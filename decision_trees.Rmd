@@ -23,6 +23,8 @@ library(rpart.plot)
 library(class)
 library(MuMIn)
 library(caret)
+library(dplyr)
+library(RColorBrewer)
 ```
 # Create some new variables based on EDA
 ```{r}
@@ -156,40 +158,39 @@ sprintf("Tree5: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitiv
     b) Second, it has the second lowest sensitivity at .1471
     
 # Random Forests
-```{r}
-library(randomForest)
-```
-```{r}
-loglikelihood <- function(y,py) {
-  pysmooth <- ifelse(py==0, 1e-12,
-                     ifelse(py==1, 1-1e-12,py))
-  sum(y * log(pysmooth) + (1-y)*log(1 - pysmooth))
-}
-```
 
 ```{r}
-accuracyMeasures <- function(pred, truth, name="model"){
-  dev.norm <- -2*loglikelihood(as.numeric(truth),pred)/length(pred)
-  ctable <- table(truth=truth,
-                  pred=(pred>.5))
-  accuracy <- sum(diag(ctable))/sum(ctable)
-  precision <- ctable[2,2]/sum(ctable[,2])
-  recall <- ctable[2,2]/sum(ctable[,2])
-  f1 <- precision*recall
-  data.frame(model=name,accuracy=accuracy,f1=f1,dev.norm)
-}
+library(randomForest)
 ```
 
 ```{r}
 randtree_mod1 <- randomForest(x=acs_fit[3:18], 
                               y=acs_fit$FamilyIncome,
-                              ntree=10,
+                              ntree=50,
                               nodesize = 7,
                               importance=T)
 ```
 ```{r}
 randtree_mod1
+plot(randtree_mod1)
 ```
+```{r}
+rand_bag1 <- randomForest(FamilyIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
+                          importance = TRUE, na.action = na.omit)
+```
+
+```{r}
+rand_bag1
+#head(rand_bag1)
+```
+```{r}
+plot(rand_bag1)
+#bag1_pred <- predict(rand_bag1, acs_fit, type="class" )
+#acs_fit$HighIncome_bag <- ifelse(bag1_pred$predicted > 250000,1,0)
+#bag_cm1 <- confusionMatrix(bag1_pred, acs_fit$HighIncome_bag, positive = "1")
+#bag_cm1
+```
+
 #stopped here!
 ```{r}
 acs_fit$rand_tree1_pred <- predict(randtree_mod1, acs_fit, type="class" )
