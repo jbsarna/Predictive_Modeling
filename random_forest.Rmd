@@ -70,6 +70,10 @@ accuracyMeasures <- function(pred, truth, name="model"){
   data.frame(model=name,accuracy=accuracy,f1=f1,dev.norm)
 }
 ```
+```{r}
+rtree_mod1 <- rpart()
+```
+
 
 ```{r}
 randtree_mod1 <- randomForest(x=acs_fit[3:18], 
@@ -80,5 +84,5 @@ randtree_mod1 <- randomForest(x=acs_fit[3:18],
 ```
 ```{r}
 accuracyMeasures(predict(randtree_mod1, newdata=acs_fit, [,'FamilyIncome'],
-                 acs_fit$FamilyIncome == 'FamilyIncome', name='random forest, train')
+                 acs_fit$FamilyIncome == 'FamilyIncome', name='random forest, train'))
 ```

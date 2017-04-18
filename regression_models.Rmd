@@ -125,22 +125,69 @@ log_cm5
 ```{r}
 linear_mod1 <- lm(FamilyIncome ~ FamilyType + FoodStamp + OwnRent + HouseCosts + Insurance + ElectricBill + NumRooms, data=acs_fit)
 summary(linear_mod1)
-acs_fit$linest_HighIncome <- ifelse(linear_mod1$fit > 250000,1,0)
+#acs_fit$lin_mod1_FamilyIncome <- predict(linear_mod1, newdata=acs_fit)
+#acs_fit$lin_mod1_HighIncome <- ifelse(acs_fit$lin_mod1_FamilyIncome > 250000,1,0)
+acs_fit$lin_mod1_HighIncome <- ifelse(linear_mod1$fit > 250000,1,0)
 linear_mod1_adjR <- summary(linear_mod1)$adj.r.squared
 linear_mod1_aic <- AIC(linear_mod1)
-linear_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+linear_cm1 <- confusionMatrix(as.factor(acs_fit$lin_mod1_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 linear_cm1
+# Residual Analysis
+summary(acs_test$HighIncome - predict(linear_mod1,newdata=acs_test))
 ```
 #### linear regression model 2
 ```{r}
+#ASK ISKEN - I DID THIS ONE DIFFERENT BUT THIS SEEMS TO MAKE MORE SENSE TO ME - PREDICT ON TEST THEN CM
+#BUT I THINK THEY BOTH DO THE SAME THING - THE RESULTS ARE THE SAME
 linear_mod2 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
 summary(linear_mod2)
-acs_fit$linest_HighIncome <- ifelse(linear_mod2$fit > 250000,1,0)
+acs_fit$lin_mod2_FamilyIncome <- predict(linear_mod2, newdata=acs_fit)
+acs_fit$lin_mod2_HighIncome <- ifelse(acs_fit$lin_mod2_FamilyIncome > 250000,1,0)
 linear_mod2_adjR <- summary(linear_mod2)$adj.r.squared
 linear_mod2_aic <- AIC(linear_mod2)
-linear_cm2 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+linear_cm2 <- confusionMatrix(as.factor(acs_fit$lin_mod2_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 linear_cm2
+# Residual Analysis
+summary(acs_test$HighIncome - predict(linear_mod2,newdata=acs_test))
 ```
+# Support Vector Machines
+```{r}
+library('kernlab')
+```
+```{r}
+svm_mod1 <- ksvm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumVehicles + NumBedrooms + 
+                   NumWorkers + NumPeople + NumChildren + NumUnits + FoodStamp + YearBuilt + Language + HeatingFuel, 
+                 data=acs_test, family=binomial(link="logit"))
+acs_fit$svm_HighIncome <- predict(svm_mod1, newdata=acs_fit, type='response')
+acs_fit$svm_HighIncome <- (acs_fit$svm_HighIncome > 0.5) * 1
+svm_cm1 <- confusionMatrix(as.factor(acs_fit$svm_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+svm_cm1
+# Residual Analysis
+summary(acs_test$HighIncome - predict(svm_mod1,newdata=acs_test))
+```
+```{r}
+svm_mod2 <- ksvm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumVehicles + NumBedrooms, 
+                 data=acs_test)
+acs_fit$svm2_HighIncome <- predict(svm_mod2, newdata=acs_fit)
+acs_fit$svm2_HighIncome <- ifelse(acs_fit$svm2_HighIncome > 250000,1,0)
+svm_cm2 <- confusionMatrix(as.factor(acs_fit$svm2_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+svm_cm2
+# Residual Analysis
+summary(acs_test$HighIncome - predict(svm_mod2,newdata=acs_test))
+```
+```{r}
+svm_mod3 <- ksvm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumRooms, data=acs_test,
+                 family=binomial(link="logit"))
+acs_fit$svm3_HighIncome <- predict(svm_mod3, newdata=acs_fit, type='response')
+acs_fit$svm3_HighIncome <- (acs_fit$svm3_HighIncome > 0.5) * 1
+svm_cm3 <- confusionMatrix(as.factor(acs_fit$svm3_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+svm_cm3
+# Residual Analysis
+summary(acs_test$HighIncome - predict(svm_mod3,newdata=acs_test))
+```
+
+
+
 # Multilevel Model Specification
 #### lme()
 
@@ -229,7 +276,7 @@ mms1_aic
 mms2 <- lme(fixed = HighIncome ~ FamilyType, method = "ML", data = acs_fit, random =~ HouseCosts | HouseCosts)
 summary(mms2)
 acs_fit$mms2_HighIncome <- ifelse(mms2$fit > 250000,1,0)
-#mms2_cm <- confusionMatrix(as.factor(acs_fit$mms2_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+#mms2_cm <- confusionMatrix(as.factor(acs_fit$mms2_HighIncome),acs_fit$rand_tree1_pred as.factor(acs_fit$HighIncome), positive = "1")
 #mms2_cm
 mms2_aic <- AIC(mms2)
 mms2_aic
@@ -243,10 +290,12 @@ lmer1_aic
 ```
 
 # Generalized Additive Models
+## Important considerations of GAM
+1) They let you represent nonlinear and non-montonic relationships between variables and outcome in linear or logistic regression framework
+2) Evaluate the Gam with same measures as you would for simple linear or logistic regression.
 ```{r}
 library(mgcv)
 ```
-
 ```{r}
 gam_mod1 <- gam(FamilyIncome ~ s(Insurance) + s(HouseCosts) + s(ElectricBill) + NumWorkers + FamilyType + 
                   FoodStamp + OwnRent + NumBedrooms + s(NumChildren) + s(NumRooms) + s(NumPeople) + NumVehicles + 
@@ -258,11 +307,13 @@ gam_mod1_aic <- AIC(gam_mod1)
 gam_cm1 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
 gam_cm1
 gam_mod1_aic
+# Residual Analysis
+summary(acs_test$HighIncome - predict(gam_mod1,newdata=acs_test))
 ```
 ```{r}
 gam_mod2 <- gam(HighIncome ~ s(Insurance) + s(HouseCosts) + s(ElectricBill) + NumWorkers + FamilyType + FoodStamp + 
                   OwnRent + NumBedrooms + s(NumChildren) + s(NumRooms) + s(NumPeople) + NumVehicles + Language, 
-                data = acs_fit, family=binomial(link=logit))
+                data = acs_fit, family=binomial(link="logit"))
 summary(gam_mod2)
 gam_mod2_adjR <- summary(gam_mod2)$r.sq
 gam_mod2_aic <- AIC(gam_mod2)
@@ -271,6 +322,8 @@ gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_
 gam_cm2
 gam_mod2_adjR
 gam_mod2_aic
+# Residual Analysis
+summary(acs_test$HighIncome - predict(gam_mod2,newdata=acs_test))
 ```
 
 # Regression Model Comparison - List all model's Accuracy, Sensitivity, and 1 additional metric
@@ -313,3 +366,4 @@ formula(gam_mod2)
 1) My linear model does estimate negative incomes, which is not logically or stastically sound
     However, the purpose is to find best predictive model. So I ignored this to see how accurate I could predict High Income
     I also created multi# Multilevel Model Specification
+2) Residual analysis of my best LM and best GAM models have a mean very far from 0, with quite a "large" range between min and max. This is not ideal, but for the purposes of stricly predicting as best as possible I can ignore this.

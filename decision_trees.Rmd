@@ -63,6 +63,8 @@ head(predict(tree1))
 head(predict(tree1, type="class"))
 tree1_cm <- confusionMatrix(predict(tree1, type="class"), acs_fit$HighIncome, positive = "1")
 tree1_cm
+# Residual analysis
+summary(acs_test$HighIncome - predict(tree1,newdata=acs_test))
 ```
 #### Decision tree 2
 ```{r}
@@ -72,6 +74,8 @@ head(predict(tree2))
 head(predict(tree2, type="class"))
 tree2_cm <- confusionMatrix(predict(tree2, type="class"), acs_fit$HighIncome, positive = "1")
 tree2_cm
+# Residual analysis
+summary(acs_test$HighIncome - predict(tree2,newdata=acs_test))
 ```
 #### Decision tree 3
 ```{r}
@@ -82,6 +86,8 @@ head(predict(tree3))
 head(predict(tree3, type="class"))
 tree3_cm <- confusionMatrix(predict(tree3, type="class"), acs_fit$HighIncome, positive = "1")
 tree3_cm
+# Residual analysis
+summary(acs_test$HighIncome - predict(tree3,newdata=acs_test))
 ```
 #### Decision tree 4
 ```{r}
@@ -93,6 +99,8 @@ head(predict(tree4))
 head(predict(tree4, type="class"))
 tree4_cm <- confusionMatrix(predict(tree4, type="class"), acs_fit$HighIncome, positive = "1")
 tree4_cm
+# Residual analysis
+summary(acs_test$HighIncome - predict(tree4,newdata=acs_test))
 ```
 #### Decision tree 5
 ```{r}
@@ -103,6 +111,8 @@ head(predict(tree5))
 head(predict(tree5, type="class"))
 tree5_cm <- confusionMatrix(predict(tree5, type="class"), acs_fit$HighIncome, positive = "1")
 tree5_cm
+# Residual analysis
+summary(acs_test$HighIncome - predict(tree5,newdata=acs_test))
 ```
 ## Tree Comparison
 
@@ -144,3 +154,46 @@ sprintf("Tree5: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitiv
 3) I would choose Tree 3 for two reasons
     a) First, it has highest prediction accuracy at .9426
     b) Second, it has the second lowest sensitivity at .1471
+    
+# Random Forests
+```{r}
+library(randomForest)
+```
+```{r}
+loglikelihood <- function(y,py) {
+  pysmooth <- ifelse(py==0, 1e-12,
+                     ifelse(py==1, 1-1e-12,py))
+  sum(y * log(pysmooth) + (1-y)*log(1 - pysmooth))
+}
+```
+
+```{r}
+accuracyMeasures <- function(pred, truth, name="model"){
+  dev.norm <- -2*loglikelihood(as.numeric(truth),pred)/length(pred)
+  ctable <- table(truth=truth,
+                  pred=(pred>.5))
+  accuracy <- sum(diag(ctable))/sum(ctable)
+  precision <- ctable[2,2]/sum(ctable[,2])
+  recall <- ctable[2,2]/sum(ctable[,2])
+  f1 <- precision*recall
+  data.frame(model=name,accuracy=accuracy,f1=f1,dev.norm)
+}
+```
+
+```{r}
+randtree_mod1 <- randomForest(x=acs_fit[3:18], 
+                              y=acs_fit$FamilyIncome,
+                              ntree=10,
+                              nodesize = 7,
+                              importance=T)
+```
+```{r}
+randtree_mod1
+```
+#stopped here!
+```{r}
+acs_fit$rand_tree1_pred <- predict(randtree_mod1, acs_fit, type="class" )
+acs_fit$rand_tree1_pred <- ifelse(acs_fit$rand_tree1_pred > 250000,1,0)
+rand_tree_cm1_pred <- confusionMatrix(acs_fit$rand_tree1_pred, acs_fit$HighIncome, positive = "1")
+#accuracyMeasures(predict(randtree_mod1, newdata=acs_fit, acs_fit$HighIncome == 'FamilyIncome', name='random forest, train')
+```
