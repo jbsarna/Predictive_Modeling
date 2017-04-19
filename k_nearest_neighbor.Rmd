@@ -13,8 +13,9 @@ acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
 ```
 
 # Create some new variables based on EDA
-a) This chunk of code is the same for all pages in this R-project
-b) It is included in each rmd file so that you can examine each predictive method individually
+1) This chunk of code is the same for all pages in this R-project
+2) It is included in each rmd file so that you can examine each predictive method individually
+3) See data_exploration for reasoning/logic
 
 ```{r}
 # Load the necessary libraries
