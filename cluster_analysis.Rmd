@@ -204,5 +204,7 @@ sprintf("GAM cluster 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f A
 The groups created via cluster analysis were used as a variable in 2 GAM models
 
 Choose GAM cluster model 2
+
 1) GAM model 2 had higher accuracy, sensitivity, and a lower AIC
+
 2) This is not the best model across all methods used, but comparison of GAM 1 and GAM 2 leads to choosing GAM 2
