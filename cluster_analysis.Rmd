@@ -5,7 +5,7 @@ date: "April 14, 2017"
 version: "Final"
 output: html_document
 
-GitHub: https://github.com/jbsarna
+GitHub: https://github.com/jbsarna/Predictive_Modeling/blob/master/cluster_analysis.Rmd
 ---
 
 ```{r}

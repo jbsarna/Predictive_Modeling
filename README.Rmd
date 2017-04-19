@@ -3,6 +3,8 @@ title: "README"
 author: "Justin Sarna"
 date: "April 18, 2017"
 output: html_document
+
+GitHub: https://github.com/jbsarna/Predictive_Modeling
 ---
 
 ```{r setup, include=FALSE}
@@ -12,16 +14,41 @@ knitr::opts_chunk$set(echo = TRUE)
 # Predictive Modeling Project
 
 ## Background Information
-1) Don't worry if a code chunk takes a some time to execute. I only included models/code that would execute in less than
-    1 minute
 
-### Understanding my code format/style
+1) Don't worry if a code chunk takes a little time to execute. I only included models/code that would execute in less than
+    1 minute (most sexecute in just a matter of seconds)
+
+#### Understanding my code format/style
+
 1) # = comments
+
 2) ## = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
 
 ## Steps/Procedures to work through this R-project
 
-## Closing thoughts
+There are 3 different ways to work through my project from start to finish
 
-## My best model!
+1) All at once - pred_model_git.rmd
+  
+  + This is one single rmd file that includes all of the methods
+  + You can start at the top and work through my entire process in a from start to finish
+  + Ends with a collection of important metrics for each method & model displayed together for easy analysis
+  
+2) Individual methods - pred_model_git.Rproj
+  
+  + Each method has its own rmd file in my R project
+  + You can work through each method individually this way
+  + Each method's rmd file ends with a collection of important metrics for each model using the respective method
+
+3) GitHub - https://github.com/jbsarna/Predictive_Modeling
+
+  + The above link will take you to my GitHub account
+  + All of the files in my R project are available on my GitHub account
+  + This is the arguably easiest way to "read" my code
+  + Downside is that you can't view any of the outputs
+  + This is a good option if you are using dual monitors - have GitHub on one and R on the other
+  + This would especially be useful as a "student" referring to this for future use in class
+  + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
+
+# My best model ended up being a random bagged forest! the prediction accuracy was over .98! 
 
