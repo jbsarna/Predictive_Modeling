@@ -212,13 +212,14 @@ sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm
 
 ## K nearest neighbor decision
 
-1) I would choose knn model 6 because highest (tested) accuracy with a "relatively" low sensitivity
+1) I would choose knn model 6 because highest (tested) accuracy. This decision is made with reservation because of 
+    low sensitivity. However, all all of these models have low sensitivity, which leads to decision based on accuracy.
 
 2) As I increase k the accuracy increases until I chose k = 50. One could continue to repeat this process or (loop) to 
     find the best exact k value where change in accuracy = 0 (first derivative of the function).
 
-3) One thing to be carefule of is that the higher the k value the more complex the "outline" of the determinations. This 
-    could lead to a "garbage" model (as I call it)
+3) One thing to be careful of is that the higher the k value the more complex the model. This 
+    could lead to a "garbage" model (as I call it), which has low sensitivity and little use outside of this scope.
 
 4) I would also think it be valuable to change the variables included in knn. I only did this with two sets of variables, 
     and mostly focused on changing the size of k. You could spend much more time tweaking independent variable combinations
