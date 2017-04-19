@@ -75,12 +75,13 @@ confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive =
 
 # Logistic Regression
 
-1) specify the model
-2) show summary results
-3) check fitted values from the model
-4) set variable equal to fitted values with probability greater than 50%
-5) set variable = adjusted R-squared for model comparison
-7) confusion matrix
+1) Specify the model
+2) Show summary results
+3) Predict using model
+4) Set binomial variable equal to predictions with criteria > .5
+5) Set variable = AIC
+6) Confusion matrix
+7) Display confusion matrix
 
 #### logistic regression model 1
 
@@ -194,6 +195,15 @@ log_cm6
 
 # Linear Regression
 
+1) Specify the model
+2) Show summary results
+3) Predict using model
+4) Set binomilal variable equal to predictions with criteria > 250000
+5) Set variable = r squared
+5) Set variable = AIC
+6) Confusion matrix
+7) Display confusion matrix
+
 #### Linear regression model 1
 
 ```{r}
@@ -253,7 +263,7 @@ https://www.reddit.com/r/MachineLearning/comments/15zrpp/please_explain_support_
 
 1) Specify the model
 2) Predict using model
-4) Set variable equal to fitted values with probability greater than 50%
+4) Set binomial variable equal to predictions with probability greater than 50%
 7) Confusion matrix
 5) Display confusion matrix
 
@@ -374,7 +384,7 @@ mms2_aic
 
 GAM's let you represent nonlinear and non-montonic relationships between variables and outcome in linear or logistic regression framework
 
-Evaluate the Gam with same measures as you would for simple linear or logistic regression.
+Evaluate the GAM with same measures as you would for simple linear or logistic regression.
 
 Here is a good link with detailed explnation & a good code example:
 
@@ -587,9 +597,9 @@ formula(gam_mod2)
 2) Residual analysis of my best LM and best GAM models have a mean very far from 0, with quite a "large" range between min and max. This is not ideal, but for the purposes of stricly predicting as best as possible I can ignore this
 
 3) Model comparisons
-+ Many of the models have very close accuracy in predicting, and very similar sensitivity
-+ Unfortunately all log models have very poor predicting accuracy because they have much higher sensitivity (good)
-+ The linear models have highest sensitivity, with relatively high accuracy
-+ Overall the SVM models have highest accuracy BUT also have low sensitivity
+  + Many of the models have very close accuracy in predicting, and very similar sensitivity
+  + Unfortunately all log models have very poor predicting accuracy because they have much higher sensitivity (good)
+  + The linear models have highest sensitivity, with relatively high accuracy
+  + Overall the SVM models have highest accuracy BUT also have low sensitivity
 
 4) I would choose the SVM model 3 based on highest accuracy
