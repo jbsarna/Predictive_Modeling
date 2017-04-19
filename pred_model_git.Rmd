@@ -28,6 +28,14 @@ library(rpart)
 library(rpart.plot)
 library(class)
 library(MuMIn)
+library(caret)
+library(dplyr)
+library(RColorBrewer)
+library(randomForest)
+library(kernlab)
+library(nlme)
+library(lme4)
+library(mgcv)
 ```
 
 Let's assume our goal is to build a model to predict if household income is greater 

@@ -29,6 +29,9 @@ library(caret)
 library(dplyr)
 library(RColorBrewer)
 library(randomForest)
+library(kernlab)
+library(nlme)
+library(lme4)
 library(mgcv)
 ```
 ## Create some new variables based on EDA

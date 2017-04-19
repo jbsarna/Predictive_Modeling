@@ -32,6 +32,10 @@ library(caret)
 library(dplyr)
 library(RColorBrewer)
 library(randomForest)
+library(kernlab)
+library(nlme)
+library(lme4)
+library(mgcv)
 
 # code from hw4 to be used for creating additional models
 acs$HighIncome <- as.numeric(with(acs, FamilyIncome >= 250000))
