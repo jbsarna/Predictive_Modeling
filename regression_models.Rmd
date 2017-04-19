@@ -505,7 +505,7 @@ sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3
 
 ```
 
-# Choose best model(s) and display formula
+### Choose best model(s) and display formula
 
 ```{r}
 formula(gam_mod2)
