@@ -59,8 +59,8 @@ acs$null_model <- 0
 ```
 
 # K-nearest neighbor
-a) k-nearest neighbor can only take numerical data
-b) It is recommended (in most all cases) to normalize the data set
+1) k-nearest neighbor can only take numerical data
+2) It is recommended (in most all cases) to normalize the data set
 
 ## First Normalize the dataset
 
