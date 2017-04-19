@@ -95,6 +95,13 @@ table(acs_norm2$groups)
 # Add additional variables ot the data set for model specification
 acs_norm2$HighIncome <- c(acs$HighIncome)
 ```
+```{r}
+# Break it into a training and test set with an 80/20 split.
+set.seed(447)
+testrecs <- sample(nrow(acs_norm2),0.2 * nrow(acs_norm2))
+acs_norm2_test <- acs_norm2[testrecs,]
+acs_norm2_fit <- acs_norm2[-testrecs,]  
+```
 
 ## Use groups as new variable in model
 
@@ -110,18 +117,20 @@ acs_norm2$HighIncome <- c(acs$HighIncome)
 
 ```{r}
 gam_mod_cluster <- gam(HighIncome ~ s(acs.Insurance) + s(acs.HouseCosts) + s(acs.ElectricBill) + groups, 
-                data = acs_norm2, family=binomial(link="logit"))
+                data = acs_norm2_fit, family=binomial(link="logit"))
 
 summary(gam_mod_cluster)
+
+acs_norm2_test$gam_cluster_HighIncome <- predict(gam_mod_cluster, newdata=acs_norm2_test)
+
+acs_norm2_test$gam_cluster_HighIncome <- ifelse(acs_norm2_test$gam_cluster_HighIncome > .5 ,1,0)
+
+gam_cluster_cm <- confusionMatrix(as.factor(acs_norm2_test$gam_cluster_HighIncome), as.factor(acs_norm2_test$HighIncome),
+                                  positive = "1")
 
 gam_cluster_adjR <- summary(gam_mod_cluster)$r.sq
 
 gam_cluster_aic <- AIC(gam_mod_cluster)
-
-acs_norm2$gam_cluster_HighIncome <- ifelse(gam_mod_cluster$fit > .5 ,1,0)
-
-gam_cluster_cm <- confusionMatrix(as.factor(acs_norm2$gam_cluster_HighIncome), as.factor(acs_norm2$HighIncome),
-                                  positive = "1")
 
 gam_cluster_cm
 
@@ -164,25 +173,36 @@ acs_norm3$Foodstamp <- c(acs$FoodStamp)
 acs_norm3$OwnRent <- c(acs$OwnRent)
 ```
 
+```{r}
+# Break it into a training and test set with an 80/20 split.
+set.seed(447)
+testrecs <- sample(nrow(acs_norm3),0.2 * nrow(acs_norm3))
+acs_norm3_test <- acs_norm3[testrecs,]
+acs_norm3_fit <- acs_norm3[-testrecs,]  
+```
+
+
 #### Model with clusters
 
 ```{r}
 
 gam_mod_cluster2 <- gam(HighIncome ~ s(acs.Insurance) + s(acs.HouseCosts) + s(acs.ElectricBill) + 
                         acs.NumBedrooms + s(acs.NumChildren) + acs.NumWorkers + s(acs.NumRooms) + 
-                        FamilyType + Foodstamp + OwnRent + groups, data = acs_norm3, 
+                        FamilyType + Foodstamp + OwnRent + groups, data = acs_norm3_fit, 
                         family=binomial(link="logit"))
 
 summary(gam_mod_cluster2)
 
+acs_norm3_test$gam_cluster_HighIncome <- predict(gam_mod_cluster2, newdata=acs_norm3_test)
+
+acs_norm3_test$gam_cluster_HighIncome <- ifelse(acs_norm3_test$gam_cluster_HighIncome > .5 ,1,0)
+
+gam_cluster_cm2 <- confusionMatrix(as.factor(acs_norm3_test$gam_cluster_HighIncome), as.factor(acs_norm3_test$HighIncome),
+                                  positive = "1")
+
 gam_cluster2_adjR <- summary(gam_mod_cluster2)$r.sq
 
 gam_cluster2_aic <- AIC(gam_mod_cluster2)
-
-acs_norm3$gam_cluster2_HighIncome <- ifelse(gam_mod_cluster2$fit > .5 ,1,0)
-
-gam_cluster_cm2 <- confusionMatrix(as.factor(acs_norm3$gam_cluster2_HighIncome), as.factor(acs_norm3$HighIncome),
-                                  positive = "1")
 
 gam_cluster_cm2
 
