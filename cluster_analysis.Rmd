@@ -59,11 +59,11 @@ denom <- max(x) - min(x)
 return (num/denom)
 }
 ```
+
 ```{r}
 acs_numericals2 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance)
 acs_norm2 <- as.data.frame(lapply(acs_numericals2[1:3], normalize))
 acs_norm2$FamilyType1 <- c(acs$FamilyType)
-acs_norm2$HighIncome <- c(acs$HighIncome)
 ```
 
 ```{r}
@@ -78,19 +78,21 @@ rect.hclust(pfit, k=5)
 acs_norm2$groups <- cutree(pfit, k=5)
 ```
 
-####Display each goup with number of observations per group
+#### Display each goup with number of observations per group
+
 ```{r}
-table(groups)
-#print_clusters(groups, 5)
+table(acs_norm2$groups)
+```
+```{r}
+acs_norm2$HighIncome <- c(acs$HighIncome)
 ```
 
 ## Use groups as new variable in model
 ```{r}
 library(mgcv)
 ```
+
 ```{r}
-# first must add HighIncome to acs_norm2 data frame
-#acs_norm_tes$HighIncome <- 
 gam_mod_cluster <- gam(HighIncome ~ s(acs.Insurance) + s(acs.HouseCosts) + s(acs.ElectricBill) + groups, 
                 data = acs_norm2, family=binomial(link="logit"))
 summary(gam_mod_cluster)
@@ -102,5 +104,72 @@ gam_cluster_cm <- confusionMatrix(as.factor(acs_norm2$gam_cluster_HighIncome), a
 gam_cluster_cm
 gam_cluster_adjR
 gam_cluster_aic
+```
+
+#### second cluster attempt
+
+```{r}
+acs_numericals3 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance, acs$NumBedrooms, 
+                              acs$NumChildren, acs$NumWorkers, acs$NumRooms)
+
+acs_norm3 <- as.data.frame(lapply(acs_numericals3[1:7], normalize))
+```
+
+```{r}
+distance2 <- dist(acs_norm3, method ="euclidean")
+
+pfit2 <- hclust(distance2, method = "ward")
+```
+```{r}
+cluster2 <- plot(pfit2)
+
+rect.hclust(pfit2, k=5)
+```
+```{r}
+acs_norm3$groups <- cutree(pfit2, k=5)
+```
+
+####Display each goup with number of observations per group
+```{r}
+table(acs_norm3$groups)
+```
+## Use groups as new variable in model
+```{r}
+library(mgcv)
+```
+
+```{r}
+acs_norm3$HighIncome <- c(acs$HighIncome)
+```
+
+#### Model with clusters
+
+```{r}
+gam_mod_cluster2 <- gam(HighIncome ~ s(acs.Insurance) + s(acs.HouseCosts) + s(acs.ElectricBill) + 
+                         acs.NumBedrooms + s(acs.NumChildren) + acs.NumWorkers + s(acs.NumRooms) + 
+                         groups, data = acs_norm3, family=binomial(link="logit"))
+
+summary(gam_mod_cluster2)
+
+gam_cluster2_adjR <- summary(gam_mod_cluster2)$r.sq
+
+gam_cluster2_aic <- AIC(gam_mod_cluster2)
+
+acs_norm3$gam_cluster2_HighIncome <- ifelse(gam_mod_cluster2$fit > .5 ,1,0)
+
+gam_cluster_cm2 <- confusionMatrix(as.factor(acs_norm3$gam_cluster2_HighIncome), as.factor(acs_norm3$HighIncome),
+                                  positive = "1")
+
+gam_cluster_cm2
+
+gam_cluster2_adjR
+
+gam_cluster2_aic
+```
+```{r}
+plot.gam(gam_mod_cluster2)
+```
+```{r}
+acs_norm3$HighIncome <- c(acs$HighIncome)
 ```
 
