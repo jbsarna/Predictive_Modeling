@@ -257,7 +257,9 @@ sprintf("Bag1:  Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitiv
     a) First, it has highest prediction accuracy at .9426
     b) Second, it has the second lowest sensitivity at .1471
     c) Thirdl, the predicted accuracy is the same as the fit accuracy (did not decrease once tested)
+
 4) FINAL DECISION
     a) Bag tree 1 has the highest predicted accuracy.
     b) Interestingly, bag 1 had pretty low fit accuracy BUT the highest predicted accuracy
     c) Slight concern - bag 1 sensitivity jumped very high from fit to test
+

@@ -25,6 +25,10 @@ library(caret)
 library(dplyr)
 library(RColorBrewer)
 library(randomForest)
+library(kernlab)
+library(nlme)
+library(lme4)
+library(mgcv)
 ```
 # Create new variables based on EDA
 ```{r}
@@ -52,18 +56,18 @@ Let's start by building a *null* model in which you simply predict that everyone
 income is < 250000 (since the majority of incomes are less than 250000).
 
 # Null Model for model comparison
+
 ```{r}
 acs$null_model <- 0
 ```
-Create a confusion matrix table and compute the overall accuracy of this model
-as well as its sensitivity and specificity.
+
+#### Create a confusion matrix table and compute the overall accuracy of this model as well as its sensitivity and specificity.
 
 ```{r}
-library(caret)
 table(acs$HighIncome, acs$null_model)
+
 prop.table(table(acs$HighIncome, acs$null_model))
-```
-```{r}
+
 confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive = "1")
 ```
 
@@ -77,6 +81,7 @@ confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive =
 7) confusion matrix
 
 #### logistic regression model 1
+
 ```{r}
 logmod1 <- glm(HighIncome ~ FamilyType + NumVehicles + OwnRent + Insurance + YearBuilt, data=acs_fit, 
                family=binomial(link="logit"))
@@ -87,6 +92,7 @@ log_cm1 <- confusionMatrix(as.factor(yhat_logmod1), as.factor(acs_fit$HighIncome
 log_cm1
 ```
 #### logistic regression model 2
+
 ```{r}
 logmod2 <- glm(HighIncome ~ FamilyType + FoodStamp + OwnRent, data=acs_fit, family=binomial(link="logit"))
 summary(logmod2)
@@ -96,6 +102,7 @@ log_cm2 <- confusionMatrix(as.factor(yhat_logmod2), as.factor(acs_fit$HighIncome
 log_cm2
 ```
 #### logistic regression model 3
+
 ```{r}
 logmod3 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh + FoodStamp + OwnRent, data=acs_fit, family=binomial(link="logit"))
 summary(logmod3)
@@ -105,6 +112,7 @@ log_cm3 <- confusionMatrix(as.factor(yhat_logmod3), as.factor(acs_fit$HighIncome
 log_cm3
 ```
 #### logistic regression model 4
+
 ```{r}
 logmod4 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
 summary(logmod4)
@@ -114,6 +122,7 @@ log_cm4 <- confusionMatrix(as.factor(yhat_logmod4), as.factor(acs_fit$HighIncome
 log_cm4
 ```
 #### logistic regression model 5
+
 ```{r}
 logmod5 <- glm(HighIncome ~ HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
 summary(logmod5)
@@ -122,214 +131,291 @@ log_mod5_aic <- summary(logmod5)$aic
 log_cm5 <- confusionMatrix(as.factor(yhat_logmod5), as.factor(acs_fit$HighIncome), positive = "1")
 log_cm5
 ```
-# Linear Regression with predictions
+# Linear Regression
 
-#### linear regression model 1
+#### Linear regression model 1
+
 ```{r}
-linear_mod1 <- lm(FamilyIncome ~ FamilyType + FoodStamp + OwnRent + HouseCosts + Insurance + ElectricBill + NumRooms, data=acs_fit)
+linear_mod1 <- lm(FamilyIncome ~ FamilyType + FoodStamp + OwnRent + HouseCosts + Insurance + ElectricBill + 
+                    NumRooms, data=acs_fit)
+
 summary(linear_mod1)
-#acs_fit$lin_mod1_FamilyIncome <- predict(linear_mod1, newdata=acs_fit)
-#acs_fit$lin_mod1_HighIncome <- ifelse(acs_fit$lin_mod1_FamilyIncome > 250000,1,0)
-acs_fit$lin_mod1_HighIncome <- ifelse(linear_mod1$fit > 250000,1,0)
+
+acs_test$lin_mod1_FamilyIncome <- predict(linear_mod1, newdata=acs_test)
+
+acs_test$lin_mod1_HighIncome <- ifelse(acs_test$lin_mod1_FamilyIncome > 250000,1,0)
+
 linear_mod1_adjR <- summary(linear_mod1)$adj.r.squared
+
 linear_mod1_aic <- AIC(linear_mod1)
-linear_cm1 <- confusionMatrix(as.factor(acs_fit$lin_mod1_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+
+linear_cm1 <- confusionMatrix(as.factor(acs_test$lin_mod1_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 linear_cm1
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(linear_mod1,newdata=acs_test))
 ```
-#### linear regression model 2
+
+#### Linear regression model 2
+
 ```{r}
-#ASK ISKEN - I DID THIS ONE DIFFERENT BUT THIS SEEMS TO MAKE MORE SENSE TO ME - PREDICT ON TEST THEN CM
-#BUT I THINK THEY BOTH DO THE SAME THING - THE RESULTS ARE THE SAME
-linear_mod2 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + NumVehicles + Language, data=acs_fit)
+linear_mod2 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + NumWorkers + FamilyType + 
+                    FoodStamp + OwnRent + NumBedrooms + NumChildren + NumRooms + NumPeople + 
+                    NumVehicles + Language, data=acs_fit)
+
 summary(linear_mod2)
-acs_fit$lin_mod2_FamilyIncome <- predict(linear_mod2, newdata=acs_fit)
-acs_fit$lin_mod2_HighIncome <- ifelse(acs_fit$lin_mod2_FamilyIncome > 250000,1,0)
+
+acs_test$lin_mod2_FamilyIncome <- predict(linear_mod2, newdata=acs_test)
+
+acs_test$lin_mod2_HighIncome <- ifelse(acs_test$lin_mod2_FamilyIncome > 250000,1,0)
+
 linear_mod2_adjR <- summary(linear_mod2)$adj.r.squared
+
 linear_mod2_aic <- AIC(linear_mod2)
-linear_cm2 <- confusionMatrix(as.factor(acs_fit$lin_mod2_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+
+linear_cm2 <- confusionMatrix(as.factor(acs_test$lin_mod2_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 linear_cm2
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(linear_mod2,newdata=acs_test))
 ```
+
 # Support Vector Machines
-```{r}
-library('kernlab')
-```
+
+1) Specify the model
+2) Predict using model
+4) Set variable equal to fitted values with probability greater than 50%
+7) Confusion matrix
+5) Display confusion matrix
+
+#### SVM model 1
+
 ```{r}
 svm_mod1 <- ksvm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumVehicles + NumBedrooms + 
-                   NumWorkers + NumPeople + NumChildren + NumUnits + FoodStamp + YearBuilt + Language + HeatingFuel, 
-                 data=acs_test, family=binomial(link="logit"))
-acs_fit$svm_HighIncome <- predict(svm_mod1, newdata=acs_fit, type='response')
-acs_fit$svm_HighIncome <- (acs_fit$svm_HighIncome > 0.5) * 1
-svm_cm1 <- confusionMatrix(as.factor(acs_fit$svm_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+                NumWorkers + NumPeople + NumChildren + NumUnits + FoodStamp + YearBuilt + Language + HeatingFuel, 
+                data=acs_fit, family=binomial(link="logit"))
+
+acs_test$svm_HighIncome <- predict(svm_mod1, newdata=acs_test, type='response')
+
+acs_test$svm_HighIncome <- (acs_test$svm_HighIncome > 0.5) * 1
+
+svm_cm1 <- confusionMatrix(as.factor(acs_test$svm_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 svm_cm1
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(svm_mod1,newdata=acs_test))
 ```
+
+#### SVM model 2
+
 ```{r}
 svm_mod2 <- ksvm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumVehicles + NumBedrooms, 
-                 data=acs_test)
-acs_fit$svm2_HighIncome <- predict(svm_mod2, newdata=acs_fit)
-acs_fit$svm2_HighIncome <- ifelse(acs_fit$svm2_HighIncome > 250000,1,0)
-svm_cm2 <- confusionMatrix(as.factor(acs_fit$svm2_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+                 data=acs_fit)
+
+acs_test$svm2_HighIncome <- predict(svm_mod2, newdata=acs_test)
+
+acs_test$svm2_HighIncome <- ifelse(acs_test$svm2_HighIncome > 250000,1,0)
+
+svm_cm2 <- confusionMatrix(as.factor(acs_test$svm2_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 svm_cm2
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(svm_mod2,newdata=acs_test))
 ```
+
+#### SVM model 3
+
 ```{r}
-svm_mod3 <- ksvm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumRooms, data=acs_test,
+svm_mod3 <- ksvm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + OwnRent + NumRooms, data=acs_fit,
                  family=binomial(link="logit"))
-acs_fit$svm3_HighIncome <- predict(svm_mod3, newdata=acs_fit, type='response')
-acs_fit$svm3_HighIncome <- (acs_fit$svm3_HighIncome > 0.5) * 1
-svm_cm3 <- confusionMatrix(as.factor(acs_fit$svm3_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+
+acs_test$svm3_HighIncome <- predict(svm_mod3, newdata=acs_test, type='response')
+
+acs_test$svm3_HighIncome <- (acs_test$svm3_HighIncome > 0.5) * 1
+
+svm_cm3 <- confusionMatrix(as.factor(acs_test$svm3_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 svm_cm3
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(svm_mod3,newdata=acs_test))
 ```
 
-
-
 # Multilevel Model Specification
-#### lme()
+
+"A mixed model is similar in many ways to a linear model. It estimates the effects of one or more explanatory variables on a response variable. The output of a mixed model will give you a list of explanatory values, estimates and confidence intervals of their effect sizes, p-values for each effect, and at least one measure of how well the model fits. You should use a mixed model instead of a simple linear model when you have a variable that describes your data sample as a subset of the data you could have collected" Tufts.edu
+
+I would not use this model for this data set to specify the model, but is worth seeing an example of its use and output
+
+1) Specify model
+2) Model summary
+3) Predict
+4) Transform predictions to binomial > .5
+4) Confusion matrix
+5) Display confusion matrix
+6) Set variable = AIC
+7) Display AIC
+
+
+#### MMS model using lme()
 
 ```{r}
-library(nlme)
-mms1 <- lme(fixed = HighIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | Insurance)
+mms1 <- lme(HighIncome ~ Insurance + HouseCosts + ElectricBill + FoodStamp + 
+            OwnRent, method = "ML", data = acs_fit, random =~ NumChildren | FamilyType)
+
 summary(mms1)
-acs_fit$linest_HighIncome <- ifelse(mms1$fit > 250000,1,0)
+
+acs_test$mms1_HighIncome <- predict(mms1, newdata=acs_test, type='response')
+acs_test$mms1_HighIncome <- (acs_test$mms1_HighIncome > 0.5) * 1
+
+mms1_cm <- confusionMatrix(as.factor(acs_test$mms2_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+mms1_cm
+
 mms1_aic <- AIC(mms1)
 mms1_aic
 ```
-```{r}
-#mms2 <- lme(fixed = FamilyIncome ~ Insurance, method = "ML", data = acs_fit, random =~ FamilyType | HouseCosts)
-#summary(mms2)
-#mms1_aic <- AIC(mms1)
-#mms1_aic
-```
 
-# MuMIn and the wonders of the dredge() function!
-### MuMIn package must be installed and library called
-
-#### glm dredge
-```{r}
-# be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
-glm1 <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
-dd_glm1 <- dredge(glm1)
-```
-```{r}
-summary(glm1)
-head(dd_glm1)
-```
-```{r}
-# best supported models
-subset(dd_glm1, delta < 5)
-# best model
-subset(dd_glm1, delta == 0)
-# calculate variable importance weights
-importance(dd_glm1)
-```
-```{r}
-dredge_mod1 <- lm(HighIncome ~ FamilyType + HouseCosts + Insurance + NumRooms + ElectricBill + FoodStamp + OwnRent + NumBedrooms, data = acs_fit, na.action = na.fail)
-summary(dredge_mod1)
-acs_fit$dredge_HighIncome <- (dredge_mod1$fit > .5) * 1
-dredge_mod1_adjR <- summary(dredge_mod1)$adj.r.squared
-dredge_mod1_aic <- AIC(dredge_mod1)
-#dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-#dredge_cm1
-dredge_mod1_adjR
-dredge_mod1_aic
-```
-
-
-
-### lm dredge
-```{r}
-lm1 <- lm(FamilyIncome ~ Insurance + HouseCosts + ElectricBill + family_type_cat + FoodStamp + own_home + NumBedrooms + NumRooms, na.action = "na.fail", data=acs_fit)
-dd_lm1 <- dredge(lm1)
-summary(lm1)
-head(dd_lm1)
-# best supported models
-subset(dd_lm1, delta <5)
-# best model
-subset(dd_lm1, delta == 0)
-# calculate variable importance weights
-importance(dd_lm1)
-#acs_fit$linest_HighIncome <- ifelse($fit > 250000,1,0)
-dredge_mod2_aic <- AIC(dd_lm1)
-#dredge_cm1 <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-#dredge_cm1
-```
-# Multilevel Model Specification
-#### lme()
+#### MMS model using lmer()
 
 ```{r}
-library(nlme)
-mms1 <- lme(fixed = FamilyIncome ~ 1, method = "ML", data = acs_fit, random =~ 1 | HouseCosts)
-summary(mms1)
-acs_fit$linest_HighIncome <- ifelse(mms1$fit > 250000,1,0)
-mms1_aic <- AIC(mms1)
-mms1_aic
-#mms1_cm <- confusionMatrix(as.factor(acs_fit$linest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
-#mms1_cm
-```
-
-```{r}
-mms2 <- lme(fixed = HighIncome ~ FamilyType, method = "ML", data = acs_fit, random =~ HouseCosts | HouseCosts)
-summary(mms2)
-acs_fit$mms2_HighIncome <- ifelse(mms2$fit > 250000,1,0)
-#mms2_cm <- confusionMatrix(as.factor(acs_fit$mms2_HighIncome),acs_fit$rand_tree1_pred as.factor(acs_fit$HighIncome), positive = "1")
-#mms2_cm
-mms2_aic <- AIC(mms2)
-mms2_aic
-```
-```{r}
-library(lme4)
-lmer1 <- lmer(HighIncome ~ 1 + FoodStamp + OwnRent + (1 | FamilyType), data = acs_fit)
+lmer1 <- lmer(HighIncome ~ 1 + FoodStamp + OwnRent + FamilyType + OwnRent + NumWorkers + (1 | FamilyType), data = acs_fit)
 summary(lmer1)
+
+acs_test$lmer1_HighIncome <- predict(lmer1, newdata=acs_test, type='response')
+acs_test$lmer1_HighIncome <- (acs_test$lmer1_HighIncome > 0.5) * 1
+
+lmer1_cm <- confusionMatrix(as.factor(acs_test$lmer1_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+lmer1_cm
+
 lmer1_aic <- AIC(lmer1)
 lmer1_aic
 ```
 
-# Generalized Additive Models
-## Important considerations of GAM
-1) They let you represent nonlinear and non-montonic relationships between variables and outcome in linear or logistic regression framework
-2) Evaluate the Gam with same measures as you would for simple linear or logistic regression.
+# MuMIn and the wonders of the dredge() function!
+## This package automates the model specification process to some degree. It does so by "dredging" through all possible combinations of independent variables. You can then display "best models" and importance metrics, which can then be used to specify your model.
+
+1) Specify Model
+2) Dredge
+3) Model Summary
+4) Find best models
+5) Calculate importance weights
+
+## GLM dredge
+
 ```{r}
-library(mgcv)
+# be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
+dredge_glm_mod <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + 
+              NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
+
+dd_glm <- dredge(dredge_glm_mod)
 ```
+```{r}
+summary(dredge_glm_mod)
+```
+
+```{r}
+# best supported models
+subset(dd_glm, delta < 5)
+
+# best model
+subset(dd_glm, delta == 0)
+
+# calculate variable importance weights
+importance(dd_glm)
+```
+
+#### LM dredge
+
+```{r}
+dredge_lm_mod <- lm(HighIncome ~ FamilyType + HouseCosts + Insurance + NumRooms + ElectricBill + FoodStamp + 
+                      OwnRent + NumBedrooms, data = acs_fit, na.action = na.fail)
+
+dd_lm <- dredge(dredge_lm_mod)
+
+summary(dredge_lm_mod)
+
+subset(dd_lm, delta < 5)
+
+subset(dd_lm, delta == 0)
+
+importance(dd_lm)
+```
+
+# Generalized Additive Models
+
+## Important considerations of GAM
+
+1) They let you represent nonlinear and non-montonic relationships between variables and outcome in linear or logistic regression framework
+
+2) Evaluate the Gam with same measures as you would for simple linear or logistic regression.
+
+### GAM model process
+
+1) Specify model
+2) Model summary
+3) Predict using model
+4) Use estimates to create binomial for High Income
+5) Display r squared
+6) Display AIC
+7) Confusion matrix
+8) Display confusion matrix
+9) Residual analysis
+
+#### GAM 1 - Estimating family income & use those estimates to predict High Income
+
 ```{r}
 gam_mod1 <- gam(FamilyIncome ~ s(Insurance) + s(HouseCosts) + s(ElectricBill) + NumWorkers + FamilyType + 
                   FoodStamp + OwnRent + NumBedrooms + s(NumChildren) + s(NumRooms) + s(NumPeople) + NumVehicles + 
                   Language, family=gaussian(link =identity), data=acs_fit)
+
 summary(gam_mod1)
-acs_fit$gamest_HighIncome <- ifelse(gam_mod1$fit > 250000,1,0)
-gam_mod1_adjR <- summary(gam_mod1)$r.sq
-gam_mod1_aic <- AIC(gam_mod1)
-gam_cm1 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome), as.factor(acs_fit$HighIncome), positive = "1")
+
+acs_test$gam_FamilyIncome <- predict(gam_mod1, newdata=acs_test)
+
+acs_test$gam_HighIncome <- ifelse(acs_test$gam_FamilyIncome > 250000,1,0)
+
+gam_mod1_rsq <- summary(gam_mod1)$r.sq
+
+gam_mod_aic <- AIC(gam_mod1)
+
+gam_cm1 <- confusionMatrix(as.factor(acs_test$gam_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 gam_cm1
-gam_mod1_aic
 
 # Residual Analysis
 summary(acs_test$HighIncome - predict(gam_mod1,newdata=acs_test))
 ```
+
+#### GAM 2 - Use logistic model with GAM to predict High Income
+
 ```{r}
 gam_mod2 <- gam(HighIncome ~ s(Insurance) + s(HouseCosts) + s(ElectricBill) + NumWorkers + FamilyType + FoodStamp + 
                   OwnRent + NumBedrooms + s(NumChildren) + s(NumRooms) + s(NumPeople) + NumVehicles + Language, 
                 data = acs_fit, family=binomial(link="logit"))
+
 summary(gam_mod2)
-gam_mod2_adjR <- summary(gam_mod2)$r.sq
+
+acs_test$gam2_HighIncome <- predict(gam_mod2, newdata=acs_test)
+
+acs_test$gam2_HighIncome <- ifelse(acs_test$gam2_HighIncome > .5 ,1,0)
+
+gam_mod2_rsq <- summary(gam_mod2)$r.sq
+
 gam_mod2_aic <- AIC(gam_mod2)
-acs_fit$gamest_HighIncome2 <- ifelse(gam_mod2$fit > .5 ,1,0)
-gam_cm2 <- confusionMatrix(as.factor(acs_fit$gamest_HighIncome2), as.factor(acs_fit$HighIncome), positive = "1")
+
+gam_cm2 <- confusionMatrix(as.factor(acs_test$gam2_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+
 gam_cm2
-gam_mod2_adjR
-gam_mod2_aic
+
 # Residual Analysis
 summary(acs_test$HighIncome - predict(gam_mod2,newdata=acs_test))
 ```
-#### Plot GAM model 2 to visualize the smoothing effect
+
+#### Plot GAM model 2 to visualize the s() effect
 
 ```{r}
 plot(gam_mod2)
@@ -369,7 +455,6 @@ sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3
 
 ```{r}
 formula(gam_mod2)
-
 ```
 
 # Comments on logit and linear regression model
