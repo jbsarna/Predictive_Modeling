@@ -65,7 +65,7 @@ income is < 250000 (since the majority of incomes are less than 250000).
 acs$null_model <- 0
 ```
 
-#### Create a confusion matrix table and compute the overall accuracy of this model as well as its sensitivity and specificity.
+Create a confusion matrix table and compute the overall accuracy of this model as well as its sensitivity and specificity.
 
 ```{r}
 table(acs$HighIncome, acs$null_model)
@@ -278,7 +278,7 @@ summary(acs_test$HighIncome - predict(svm_mod3,newdata=acs_test))
 
 # Multilevel Model Specification
 
-"A mixed model is similar in many ways to a linear model. It estimates the effects of one or more explanatory variables on a response variable. The output of a mixed model will give you a list of explanatory values, estimates and confidence intervals of their effect sizes, p-values for each effect, and at least one measure of how well the model fits. You should use a mixed model instead of a simple linear model when you have a variable that describes your data sample as a subset of the data you could have collected" Tufts.edu
+"A mixed model is similar in many ways to a linear model. It estimates the effects of one or more explanatory variables on a response variable. The output of a mixed model will give you a list of explanatory values, estimates and confidence intervals of their effect sizes, p-values for each effect, and at least one measure of how well the model fits. You should use a mixed model instead of a simple linear model when you have a variable that describes your data sample as a subset of the data you could have collected" Tufts.edu (see link for source of quote)
 
 Check out this link for a very well explained tutorial with easy to understand explanation of mixed models:
 
@@ -331,7 +331,8 @@ lmer1_aic
 ```
 
 # MuMIn and the wonders of the dredge() function!
-## This package automates the model specification process to some degree. It does so by "dredging" through all possible combinations of independent variables. You can then display "best models" and importance metrics, which can then be used to specify your model.
+
+This package automates the model specification process to some degree. It does so by "dredging" through all possible combinations of independent variables. You can then display "best models" and importance metrics, which can then be used to specify your model.
 
 This link is a very detailed example of using MuMIn and the dredge function. Scroll down towards the end to see where/how to use dredge:
 
@@ -388,9 +389,9 @@ importance(dd_lm)
 
 ## Important considerations of GAM
 
-1) They let you represent nonlinear and non-montonic relationships between variables and outcome in linear or logistic regression framework
+GAM's let you represent nonlinear and non-montonic relationships between variables and outcome in linear or logistic regression framework
 
-2) Evaluate the Gam with same measures as you would for simple linear or logistic regression.
+Evaluate the Gam with same measures as you would for simple linear or logistic regression.
 
 Here is a good link with detailed explnation & a good code example:
 
@@ -465,7 +466,10 @@ plot(gam_mod2)
 ```
 
 
-# Regression Model Comparison - List all model's Accuracy, Sensitivity, and 1 additional metric
+# Regression Model Comparison
+
+List all model's Accuracy, Sensitivity, and 1 additional metric
+
 ```{r}
 # Display comparison of accuracy of each decision tree 
 
