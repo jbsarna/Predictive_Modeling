@@ -329,6 +329,12 @@ gam_mod2_aic
 # Residual Analysis
 summary(acs_test$HighIncome - predict(gam_mod2,newdata=acs_test))
 ```
+#### Plot GAM model 2 to visualize the smoothing effect
+
+```{r}
+plot(gam_mod2)
+```
+
 
 # Regression Model Comparison - List all model's Accuracy, Sensitivity, and 1 additional metric
 ```{r}

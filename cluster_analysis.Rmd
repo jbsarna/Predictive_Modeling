@@ -26,6 +26,7 @@ library(caret)
 library(dplyr)
 library(RColorBrewer)
 library(randomForest)
+library(mgcv)
 ```
 # Create some new variables based on EDA
 ```{r}
@@ -52,6 +53,8 @@ acs$null_model <- 0
 
 # Cluster Analysis
 
+#### Function to normalize data
+
 ```{r}
 normalize <- function(x) {
 num <- x - min(x)
@@ -60,21 +63,25 @@ return (num/denom)
 }
 ```
 
+# First cluster attempt
+
+1) Create data frame
+2) Normalize data
+3) Calculate distances
+4) Plot cluster dendogram
+5) Cut the tree into k number of clusters
+
 ```{r}
 acs_numericals2 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance)
 acs_norm2 <- as.data.frame(lapply(acs_numericals2[1:3], normalize))
 acs_norm2$FamilyType1 <- c(acs$FamilyType)
-```
 
-```{r}
 distance <- dist(acs_norm2, method ="euclidean")
 pfit <- hclust(distance, method = "ward")
-```
-```{r}
+
 cluster1 <- plot(pfit, labels = acs_norm2$FamilyType)
 rect.hclust(pfit, k=5)
-```
-```{r}
+
 acs_norm2$groups <- cutree(pfit, k=5)
 ```
 
@@ -83,71 +90,88 @@ acs_norm2$groups <- cutree(pfit, k=5)
 ```{r}
 table(acs_norm2$groups)
 ```
+
 ```{r}
+# Add additional variables ot the data set for model specification
 acs_norm2$HighIncome <- c(acs$HighIncome)
 ```
 
 ## Use groups as new variable in model
-```{r}
-library(mgcv)
-```
+
+#### Model with clusters
+
+1) Specify model using GAM
+2) Show summary of model
+3) Set variable = r squared
+4) Set variable = AIC
+5) Set predictions to binomial based on criteria > .5
+6) Confusion Matrix
+7) Display confusion matrix, r squared, and AIC
 
 ```{r}
 gam_mod_cluster <- gam(HighIncome ~ s(acs.Insurance) + s(acs.HouseCosts) + s(acs.ElectricBill) + groups, 
                 data = acs_norm2, family=binomial(link="logit"))
+
 summary(gam_mod_cluster)
+
 gam_cluster_adjR <- summary(gam_mod_cluster)$r.sq
+
 gam_cluster_aic <- AIC(gam_mod_cluster)
+
 acs_norm2$gam_cluster_HighIncome <- ifelse(gam_mod_cluster$fit > .5 ,1,0)
+
 gam_cluster_cm <- confusionMatrix(as.factor(acs_norm2$gam_cluster_HighIncome), as.factor(acs_norm2$HighIncome),
                                   positive = "1")
+
 gam_cluster_cm
+
 gam_cluster_adjR
+
 gam_cluster_aic
 ```
 
-#### second cluster attempt
+# Second cluster attempt
 
 ```{r}
 acs_numericals3 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance, acs$NumBedrooms, 
                               acs$NumChildren, acs$NumWorkers, acs$NumRooms)
 
 acs_norm3 <- as.data.frame(lapply(acs_numericals3[1:7], normalize))
-```
 
-```{r}
 distance2 <- dist(acs_norm3, method ="euclidean")
 
 pfit2 <- hclust(distance2, method = "ward")
-```
-```{r}
+
 cluster2 <- plot(pfit2)
 
 rect.hclust(pfit2, k=5)
-```
-```{r}
-acs_norm3$groups <- cutree(pfit2, k=5)
+
+acs_norm3$groups <- cutree(pfit2, k=15)
 ```
 
-####Display each goup with number of observations per group
+#### Display each goup with number of observations per group
+
 ```{r}
 table(acs_norm3$groups)
 ```
 ## Use groups as new variable in model
-```{r}
-library(mgcv)
-```
 
 ```{r}
+# Add additional variables ot the data set for model specification
 acs_norm3$HighIncome <- c(acs$HighIncome)
+acs_norm3$FamilyType <- c(acs$FamilyType)
+acs_norm3$Foodstamp <- c(acs$FoodStamp)
+acs_norm3$OwnRent <- c(acs$OwnRent)
 ```
 
 #### Model with clusters
 
 ```{r}
+
 gam_mod_cluster2 <- gam(HighIncome ~ s(acs.Insurance) + s(acs.HouseCosts) + s(acs.ElectricBill) + 
-                         acs.NumBedrooms + s(acs.NumChildren) + acs.NumWorkers + s(acs.NumRooms) + 
-                         groups, data = acs_norm3, family=binomial(link="logit"))
+                        acs.NumBedrooms + s(acs.NumChildren) + acs.NumWorkers + s(acs.NumRooms) + 
+                        FamilyType + Foodstamp + OwnRent + groups, data = acs_norm3, 
+                        family=binomial(link="logit"))
 
 summary(gam_mod_cluster2)
 
@@ -166,10 +190,19 @@ gam_cluster2_adjR
 
 gam_cluster2_aic
 ```
-```{r}
-plot.gam(gam_mod_cluster2)
-```
-```{r}
-acs_norm3$HighIncome <- c(acs$HighIncome)
-```
 
+# Compare both models
+
+```{r}
+sprintf("GAM cluster 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+        gam_cluster_cm$overall['Accuracy'], gam_cluster_cm$byClass['Sensitivity'], gam_cluster_aic)
+sprintf("GAM cluster 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+        gam_cluster_cm2$overall['Accuracy'], gam_cluster_cm2$byClass['Sensitivity'], gam_cluster2_aic)
+```
+# Cluster Analysis Decision
+
+The groups created via cluster analysis were used as a variable in 2 GAM models
+
+Choose GAM cluster model 2
+1) GAM model 2 had higher accuracy, sensitivity, and a lower AIC
+2) This is not the best model across all methods used, but comparison of GAM 1 and GAM 2 leads to choosing GAM 2
