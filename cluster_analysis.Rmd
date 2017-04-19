@@ -72,7 +72,7 @@ return (num/denom)
 }
 ```
 
-# First cluster attempt
+## First cluster attempt
 
 1) Create data frame
 2) Normalize data
@@ -148,7 +148,7 @@ gam_cluster_adjR
 gam_cluster_aic
 ```
 
-# Second cluster attempt
+## Second cluster attempt
 
 ```{r}
 acs_numericals3 <- data.frame(acs$HouseCosts, acs$ElectricBill, acs$Insurance, acs$NumBedrooms, 

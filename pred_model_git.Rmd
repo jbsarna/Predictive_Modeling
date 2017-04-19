@@ -1169,112 +1169,122 @@ Display important metrics for each model
 ```{r}
 sprintf("LOGISTIC REGRESSION")
 
-sprintf("Logistic model 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 1: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm1$overall['Accuracy'], log_cm1$byClass['Sensitivity'], log_mod1_aic)
 
-sprintf("Logistic model 2: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 2: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm2$overall['Accuracy'], log_cm2$byClass['Sensitivity'], log_mod2_aic)
 
-sprintf("Logistic model 3: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 3: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm3$overall['Accuracy'], log_cm3$byClass['Sensitivity'], log_mod3_aic)
 
-sprintf("Logistic model 4: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 4: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm4$overall['Accuracy'], log_cm4$byClass['Sensitivity'], log_mod4_aic)
 
-sprintf("Logistic model 5: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 5: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm5$overall['Accuracy'], log_cm5$byClass['Sensitivity'], log_mod5_aic)
 
-sprintf("Logistic model 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 6: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm6$overall['Accuracy'], log_cm6$byClass['Sensitivity'], log_mod6_aic)
 
-sprintf("Logistic model 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 6: Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         log_cm6$overall['Accuracy'], log_cm6$byClass['Sensitivity'], log_mod6_aic)
 
-sprintf("                                                                                        ")
+sprintf("                                                                                                      ")
 
 sprintf("LINEAR REGRESSION")
 
-sprintf("Linear model 1:   Predicted Accuracy = %.4f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
+sprintf("Linear model 1:   Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   Adj R-squared = %.3f", 
         linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], linear_mod1_rsq)
 
-sprintf("Linear model 2:   Predicted Accuracy = %.4f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
+sprintf("Linear model 2:   Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   Adj R-squared = %.3f", 
         linear_cm2$overall['Accuracy'], linear_cm2$byClass['Sensitivity'], linear_mod2_rsq)
 
-sprintf("                                                                                        ")
+sprintf("                                                                                                      ")
 
 sprintf("SUPPORT VECTOR MACHINES")
 
-sprintf("SVM model 1:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f", 
+sprintf("SVM model 1:      Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f", 
         svm_cm1$overall['Accuracy'], svm_cm1$byClass['Sensitivity'])
 
-sprintf("SVM model 2:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f", 
+sprintf("SVM model 2:      Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f", 
         svm_cm2$overall['Accuracy'], svm_cm2$byClass['Sensitivity'])
 
-sprintf("SVM model 3:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f", 
+sprintf("SVM model 3:      Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f", 
         svm_cm3$overall['Accuracy'], svm_cm3$byClass['Sensitivity'])
-sprintf("                                                                                        ")
+
+sprintf("                                                                                                      ")
 
 sprintf("MULTILEVEL MODEL SPECIFICATION")
 
-sprintf("MMS model 1:      Predicted Accuracy = NA    Predicted Sensitivity = NA    AIC = %.1f", mms1_aic)
+sprintf("MMS model 1:      Predicted Accuracy = NA        Predicted Sensitivity = NA    AIC = %.1f", mms1_aic)
 
-sprintf("MMS model 2:      Predicted Accuracy = NA    Predicted Sensitivity = NA    AIC = %.1f", mms2_aic)
+sprintf("MMS model 2:      Predicted Accuracy = NA        Predicted Sensitivity = NA    AIC = %.1f", mms2_aic)
 
-sprintf("                                                                                        ")
+sprintf("                                                                                                      ")
 
 sprintf("GENERALIZED ADDITIVE MODELS")
 
-sprintf("GAM model 1:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("GAM model 1:      Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         gam_cm1$overall['Accuracy'], gam_cm1$byClass['Sensitivity'], gam_mod_aic)
 
-sprintf("GAM model 2:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("GAM model 2:      Predicted Accuracy = %.4f   Predicted Sensitivity = %.3f   AIC = %.1f", 
         gam_cm2$overall['Accuracy'], gam_cm2$byClass['Sensitivity'], gam_mod2_aic)
+
+sprintf("                                                                                                      ")
 
 sprintf("DECISION TREES")
 
-sprintf("Tree1: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree1_cm$overall['Accuracy'], 
+sprintf("Tree 1: Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",tree1_cm$overall['Accuracy'], 
         tree_cm1_pred$overall['Accuracy'], tree_cm1_pred$byClass['Sensitivity'])
 
-sprintf("Tree2: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree2_cm$overall['Accuracy'], 
+sprintf("Tree 2: Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",tree2_cm$overall['Accuracy'], 
         tree_cm2_pred$overall['Accuracy'], tree_cm2_pred$byClass['Sensitivity'])
 
-sprintf("Tree3: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree3_cm$overall['Accuracy'], 
+sprintf("Tree 3: Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",tree3_cm$overall['Accuracy'], 
         tree_cm3_pred$overall['Accuracy'], tree_cm3_pred$byClass['Sensitivity'])
 
-sprintf("Tree4: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree4_cm$overall['Accuracy'], 
+sprintf("Tree 4: Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",tree4_cm$overall['Accuracy'], 
         tree_cm4_pred$overall['Accuracy'], tree_cm4_pred$byClass['Sensitivity'])
 
-sprintf("Tree5: Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",tree5_cm$overall['Accuracy'], 
+sprintf("Tree 5: Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",tree5_cm$overall['Accuracy'], 
         tree_cm5_pred$overall['Accuracy'], tree_cm5_pred$byClass['Sensitivity'])
 
-sprintf("Bag1:  Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",bag_cm1_fit$overall['Accuracy'], 
+sprintf("Bag 1:  Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",bag_cm1_fit$overall['Accuracy'], 
         bag_cm1_pred$overall['Accuracy'], bag_cm1_pred$byClass['Sensitivity'])
+
+sprintf("                                                                                                      ")
 
 sprintf("K NEAREST NEIGHBOR")
 
-sprintf("Knn 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn1_cm_pred$overall['Accuracy'], 
+sprintf("Knn 1:            Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f", knn1_cm_pred$overall['Accuracy'], 
         knn1_cm_pred$byClass['Sensitivity'])
 
-sprintf("Knn 2: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn2_cm_pred$overall['Accuracy'], 
+sprintf("Knn 2:            Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f", knn2_cm_pred$overall['Accuracy'], 
         knn2_cm_pred$byClass['Sensitivity'])
 
-sprintf("Knn 3: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn3_cm_pred$overall['Accuracy'], 
+sprintf("Knn 3:            Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f", knn3_cm_pred$overall['Accuracy'], 
         knn3_cm_pred$byClass['Sensitivity'])
 
-sprintf("Knn 4: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn4_cm_pred$overall['Accuracy'], 
+sprintf("Knn 4:            Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f", knn4_cm_pred$overall['Accuracy'], 
         knn4_cm_pred$byClass['Sensitivity'])
 
-sprintf("Knn 5: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn5_cm_pred$overall['Accuracy'], 
+sprintf("Knn 5:            Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f", knn5_cm_pred$overall['Accuracy'], 
         knn5_cm_pred$byClass['Sensitivity'])
 
-sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm_pred$overall['Accuracy'], 
+sprintf("Knn 6:            Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f", knn6_cm_pred$overall['Accuracy'], 
         knn6_cm_pred$byClass['Sensitivity'])
+
+sprintf("                                                                                                      ")
 
 sprintf("CLUSTER ANALYSIS USED IN MODELS")
 
-sprintf("GAM cluster 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("GAM cluster 1:    Predicted Accuracy = %.3f    Predicted Sensitivity = %.3f   AIC = %.1f", 
         gam_cluster_cm$overall['Accuracy'], gam_cluster_cm$byClass['Sensitivity'], gam_cluster_aic)
 
-sprintf("GAM cluster 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("GAM cluster 2:    Predicted Accuracy = %.3f    Predicted Sensitivity = %.3f   AIC = %.1f", 
         gam_cluster_cm2$overall['Accuracy'], gam_cluster_cm2$byClass['Sensitivity'], gam_cluster2_aic)
 ```
+# BEST MODEL = Bagged Random Forest
+
+### Prediction accuracy > .98
