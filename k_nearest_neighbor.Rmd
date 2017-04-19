@@ -12,7 +12,7 @@ acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
                   header=TRUE, stringsAsFactors=TRUE)
 ```
 
-# Create some new variables based on EDA
+## Create some new variables based on EDA
 1) This chunk of code is the same for all pages in this R-project
 2) It is included in each rmd file so that you can examine each predictive method individually
 3) See data_exploration for reasoning/logic
@@ -58,7 +58,7 @@ acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_tes
 acs$null_model <- 0
 ```
 
-# k-nearest neighbor
+# K-nearest neighbor
 a) k-nearest neighbor can only take numerical data
 b) It is recommended (in most all cases) to normalize the data set
 
@@ -189,8 +189,10 @@ knn6_cm_pred <- confusionMatrix(acs_knn6, acsNorm_valid$HighIncome, positive = "
 knn6_cm_pred
 ```
 
-## Compare all knn models in one output
-## Summary Output of each model for comparison - Displayed values are for the test data set
+# Compare all knn models in one output
+Summary Output of each model for comparison. 
+Displayed values are for the test data set.
+
 How well did each model do compared to the others?
 
 ```{r}
@@ -212,7 +214,7 @@ sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm
 
 ```
 
-## K nearest neighbor decision
+# K nearest neighbor decision
 
 1) I would choose knn model 6 because highest (tested) accuracy. This decision is made with reservation because of 
     low sensitivity. However, all all of these models have low sensitivity, which leads to decision based on accuracy.
