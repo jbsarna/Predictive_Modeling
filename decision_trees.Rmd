@@ -255,17 +255,17 @@ sprintf("Bag1:  Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitiv
 # Decision Tree Decision
 
 1) Highest fit accuracy does not result in in most accurate predictions - Model 4 is a prime example of overfitting
-  + Model 4 has nearly perfect fit accuracy
-  + Model 4 also has the worst prediction accuracy coupled with highest sensitivity
-  + Model 4 accuracy drops significantly once tested
+    + Model 4 has nearly perfect fit accuracy
+    + Model 4 also has the worst prediction accuracy coupled with highest sensitivity
+    + Model 4 accuracy drops significantly once tested
 
 2) Model 5 is a close contender to model 3 - they have the highest predicted accuracies BUT very different sensitivities
 
 3) Decision tree 3 performs better than tree 1, 2, 4, and 5
-  + First, it has higher prediction accuracy at .9426
-  + Second, the predicted accuracy is the same as the fit accuracy (did not decrease once tested like others)
+    + First, it has higher prediction accuracy at .9426
+    + Second, the predicted accuracy is the same as the fit accuracy (did not decrease once tested like others)
 
 4) FINAL DECISION
-  + Bag tree 1 has the highest predicted accuracy.
-  + Interestingly, bag 1 had pretty low fit accuracy BUT the highest predicted accuracy
-  + Bag tree 1 increased in prediction accuracy between fit to test/predicted which resulted in a large increase in sensitivity = a very good thing!
+    + Bag tree 1 has the highest predicted accuracy.
+    + Interestingly, bag 1 had pretty low fit accuracy BUT the highest predicted accuracy
+    + Bag tree 1 increased in prediction accuracy between fit to test/predicted which resulted in a large increase in sensitivity = a very good thing!
