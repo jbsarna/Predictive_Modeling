@@ -4,6 +4,8 @@ author: "Justin Sarna"
 date: "April 14, 2017"
 version: "Final"
 output: html_document
+
+GitHub: https://github.com/jbsarna
 ---
 
 ```{r}
@@ -223,6 +225,7 @@ gam_cluster2_aic
 ```{r}
 sprintf("GAM cluster 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         gam_cluster_cm$overall['Accuracy'], gam_cluster_cm$byClass['Sensitivity'], gam_cluster_aic)
+
 sprintf("GAM cluster 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
         gam_cluster_cm2$overall['Accuracy'], gam_cluster_cm2$byClass['Sensitivity'], gam_cluster2_aic)
 ```

@@ -2,7 +2,10 @@
 title: "Regression Models"
 author: "Justin Sarna"
 date: "April 14, 2017"
+version: "Final"
 output: html_document
+
+GitHub: https://github.com/jbsarna
 ---
 
 ```{r}
@@ -518,7 +521,6 @@ importance(dd_lm)
 List of all regression models
 
 ```{r}
-# Display comparison of accuracy of each decision tree 
 sprintf("LOGISTIC REGRESSION")
 
 sprintf("Logistic model 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 

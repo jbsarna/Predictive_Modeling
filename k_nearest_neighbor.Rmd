@@ -4,6 +4,8 @@ author: "Justin Sarna"
 date: "April 14, 2017"
 version: "Final"
 output: html_document
+
+GitHub: https://github.com/jbsarna
 ---
 
 ```{r}
@@ -196,22 +198,25 @@ Displayed values are for the test data set.
 How well did each model do compared to the others?
 
 ```{r}
-# Display comparison of accuracy of each decision tree
 sprintf("The no information rate = %.4f", knn1_cm_pred$overall[5])
+
 sprintf("Knn 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn1_cm_pred$overall['Accuracy'], 
         knn1_cm_pred$byClass['Sensitivity'])
+
 sprintf("Knn 2: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn2_cm_pred$overall['Accuracy'], 
         knn2_cm_pred$byClass['Sensitivity'])
+
 sprintf("Knn 3: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn3_cm_pred$overall['Accuracy'], 
         knn3_cm_pred$byClass['Sensitivity'])
+
 sprintf("Knn 4: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn4_cm_pred$overall['Accuracy'], 
         knn4_cm_pred$byClass['Sensitivity'])
+
 sprintf("Knn 5: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn5_cm_pred$overall['Accuracy'], 
         knn5_cm_pred$byClass['Sensitivity'])
+
 sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm_pred$overall['Accuracy'], 
         knn6_cm_pred$byClass['Sensitivity'])
-
-
 ```
 
 # K nearest neighbor decision

@@ -4,6 +4,8 @@ author: "Justin Sarna"
 date: "April 14, 2017"
 version: "Final"
 output: html_document
+
+GitHub: https://github.com/jbsarna
 ---
 
 ```{r}
