@@ -44,16 +44,14 @@ acs$NumWorkers2 <- (acs$NumWorkers == 2) * 1
 acs$HouseCostsHigh <- (acs$HouseCosts > 1000) * 1
 acs$high_electric <- (acs$ElectricBill > 350) * 1
 
+# Create binary variable where 1 = not on food stamps & not renting & married
+acs$HI_pred1[acs$FoodStamp == 'No' & acs$OwnRent != 'Rented' & acs$FamilyType == 'Married'] <- 1
+
 # Break it into a training and test set with an 80/20 split.
 set.seed(447)
 testrecs <- sample(nrow(acs),0.2 * nrow(acs))
 acs_test <- acs[testrecs,]
 acs_fit <- acs[-testrecs,]
-
-# Create binary variable where 1 = not on food stamps & not renting & married
-acs$HI_pred1 <- 0
-acs$HI_pred1[acs_test$FoodStamp == 'No' & acs_test$OwnRent != 'Rented' & acs_test$FamilyType == 'Married'] <- 1
-acs$null_model <- 0
 ```
 
 Let's start by building a *null* model in which you simply predict that everyone's
@@ -89,10 +87,17 @@ confusionMatrix(as.factor(acs$null_model), as.factor(acs$HighIncome), positive =
 ```{r}
 logmod1 <- glm(HighIncome ~ FamilyType + NumVehicles + OwnRent + Insurance + YearBuilt, data=acs_fit, 
                family=binomial(link="logit"))
+
 summary(logmod1)
-yhat_logmod1 <- (logmod1$fitted.values > 0.05) * 1
+
+acs_test$yhat_logmod1 <- predict(logmod1, newdata=acs_test, type='response')
+
+acs_test$yhat_logmod1 <- (acs_test$yhat_logmod1 > 0.05) * 1
+
 log_mod1_aic <- summary(logmod1)$aic
-log_cm1 <- confusionMatrix(as.factor(yhat_logmod1), as.factor(acs_fit$HighIncome), positive = "1")
+
+log_cm1 <- confusionMatrix(as.factor(acs_test$yhat_logmod1), as.factor(acs_test$HighIncome), positive = "1")
+
 log_cm1
 ```
 #### logistic regression model 2
@@ -102,11 +107,13 @@ logmod2 <- glm(HighIncome ~ FamilyType + FoodStamp + OwnRent, data=acs_fit, fami
 
 summary(logmod2)
 
-yhat_logmod2 <- (logmod2$fitted.values > 0.5) * 1
+acs_test$yhat_logmod2 <- predict(logmod2, newdata=acs_test, type='response')
+
+acs_test$yhat_logmod2 <- (acs_test$yhat_logmod2 > 0.05) * 1
 
 log_mod2_aic <- summary(logmod2)$aic
 
-log_cm2 <- confusionMatrix(as.factor(yhat_logmod2), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm2 <- confusionMatrix(as.factor(acs_test$yhat_logmod2), as.factor(acs_test$HighIncome), positive = "1")
 
 log_cm2
 ```
@@ -118,11 +125,13 @@ logmod3 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh + FoodS
 
 summary(logmod3)
 
-yhat_logmod3 <- (logmod3$fit > 0.5) * 1
+acs_test$yhat_logmod3 <- predict(logmod3, newdata=acs_test, type='response')
+
+acs_test$yhat_logmod3 <- (acs_test$yhat_logmod3 > 0.05) * 1
 
 log_mod3_aic <- summary(logmod3)$aic
 
-log_cm3 <- confusionMatrix(as.factor(yhat_logmod3), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm3 <- confusionMatrix(as.factor(acs_test$yhat_logmod3), as.factor(acs_test$HighIncome), positive = "1")
 
 log_cm3
 ```
@@ -133,29 +142,56 @@ logmod4 <- glm(HighIncome ~ InsuranceHigh + NumWorkers2 + HouseCostsHigh, data=a
 
 summary(logmod4)
 
-yhat_logmod4 <- (logmod4$fit > 0.5) * 1
+acs_test$yhat_logmod4 <- predict(logmod4, newdata=acs_test, type='response')
+
+acs_test$yhat_logmod4 <- (acs_test$yhat_logmod4 > 0.05) * 1
 
 log_mod4_aic <- summary(logmod4)$aic
 
-log_cm4 <- confusionMatrix(as.factor(yhat_logmod4), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm4 <- confusionMatrix(as.factor(acs_test$yhat_logmod4), as.factor(acs_test$HighIncome), positive = "1")
 
 log_cm4
 ```
 #### logistic regression model 5
 
 ```{r}
-logmod5 <- glm(HighIncome ~ HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
+logmod5 <- glm(HighIncome ~ FamilyType + NumBedrooms + NumChildren + NumPeople + NumRooms + NumUnits + NumVehicles + 
+                 NumWorkers + OwnRent + HouseCosts + ElectricBill + FoodStamp + Insurance + Language + 
+                 InsuranceHigh + NumWorkers2 + HouseCostsHigh, data=acs_fit, family=binomial(link="logit"))
 
 summary(logmod5)
 
-yhat_logmod5 <- (logmod4$fit > 0.5) * 1
+acs_test$yhat_logmod5 <- predict(logmod5, newdata=acs_test, type='response')
+
+acs_test$yhat_logmod5 <- (acs_test$yhat_logmod5 > 0.05) * 1
 
 log_mod5_aic <- summary(logmod5)$aic
 
-log_cm5 <- confusionMatrix(as.factor(yhat_logmod5), as.factor(acs_fit$HighIncome), positive = "1")
+log_cm5 <- confusionMatrix(as.factor(acs_test$yhat_logmod5), as.factor(acs_test$HighIncome), positive = "1")
 
 log_cm5
 ```
+
+#### logistic regression model 6
+
+```{r}
+logmod6 <- glm(HighIncome ~ FamilyType + NumBedrooms + NumChildren + OwnRent + 
+              HouseCosts + ElectricBill + FoodStamp + InsuranceHigh, 
+              data=acs_fit, family=binomial(link="logit"))
+
+summary(logmod6)
+
+acs_test$yhat_logmod6 <- predict(logmod6, newdata=acs_test, type='response')
+
+acs_test$yhat_logmod6 <- (acs_test$yhat_logmod6 > 0.05) * 1
+
+log_mod6_aic <- summary(logmod6)$aic
+
+log_cm6 <- confusionMatrix(as.factor(acs_test$yhat_logmod6), as.factor(acs_test$HighIncome), positive = "1")
+
+log_cm6
+```
+
 # Linear Regression
 
 #### Linear regression model 1
@@ -170,7 +206,7 @@ acs_test$lin_mod1_FamilyIncome <- predict(linear_mod1, newdata=acs_test)
 
 acs_test$lin_mod1_HighIncome <- ifelse(acs_test$lin_mod1_FamilyIncome > 250000,1,0)
 
-linear_mod1_adjR <- summary(linear_mod1)$adj.r.squared
+linear_mod1_rsq <- summary(linear_mod1)$r.sq
 
 linear_mod1_aic <- AIC(linear_mod1)
 
@@ -195,7 +231,7 @@ acs_test$lin_mod2_FamilyIncome <- predict(linear_mod2, newdata=acs_test)
 
 acs_test$lin_mod2_HighIncome <- ifelse(acs_test$lin_mod2_FamilyIncome > 250000,1,0)
 
-linear_mod2_adjR <- summary(linear_mod2)$adj.r.squared
+linear_mod2_rsq <- summary(linear_mod2)$r.sq
 
 linear_mod2_aic <- AIC(linear_mod2)
 
@@ -284,7 +320,7 @@ Check out this link for a very well explained tutorial with easy to understand e
 
 http://ase.tufts.edu/gsc/gradresources/guidetomixedmodelsinr/mixed%20model%20guide.html
 
-I would not use this model for this data set to specify the model, but is worth seeing an example of its use and output
+I would not use this model for this data set to specify th
 
 1) Specify model
 2) Model summary
@@ -305,9 +341,10 @@ mms1 <- lme(HighIncome ~ Insurance + HouseCosts + ElectricBill + FoodStamp +
 summary(mms1)
 
 acs_test$mms1_HighIncome <- predict(mms1, newdata=acs_test, type='response')
+
 acs_test$mms1_HighIncome <- (acs_test$mms1_HighIncome > 0.5) * 1
 
-mms1_cm <- confusionMatrix(as.factor(acs_test$mms2_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+mms1_cm <- confusionMatrix(as.factor(acs_test$mms1_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
 mms1_cm
 
 mms1_aic <- AIC(mms1)
@@ -317,72 +354,18 @@ mms1_aic
 #### MMS model using lmer()
 
 ```{r}
-lmer1 <- lmer(HighIncome ~ 1 + FoodStamp + OwnRent + FamilyType + OwnRent + NumWorkers + (1 | FamilyType), data = acs_fit)
-summary(lmer1)
+mms2 <- lmer(HighIncome ~ 1 + FoodStamp + OwnRent + FamilyType + OwnRent + NumWorkers + (1 | FamilyType), data = acs_fit)
 
-acs_test$lmer1_HighIncome <- predict(lmer1, newdata=acs_test, type='response')
-acs_test$lmer1_HighIncome <- (acs_test$lmer1_HighIncome > 0.5) * 1
+summary(mms2)
 
-lmer1_cm <- confusionMatrix(as.factor(acs_test$lmer1_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
-lmer1_cm
+acs_test$mms2_HighIncome <- predict(mms2, newdata=acs_test, type='response')
+acs_test$mms2_HighIncome <- (acs_test$mms2_HighIncome > 0.5) * 1
 
-lmer1_aic <- AIC(lmer1)
-lmer1_aic
-```
+mms2_cm <- confusionMatrix(as.factor(acs_test$mms2_HighIncome), as.factor(acs_test$HighIncome), positive = "1")
+mms2_cm
 
-# MuMIn and the wonders of the dredge() function!
-
-This package automates the model specification process to some degree. It does so by "dredging" through all possible combinations of independent variables. You can then display "best models" and importance metrics, which can then be used to specify your model.
-
-This link is a very detailed example of using MuMIn and the dredge function. Scroll down towards the end to see where/how to use dredge:
-
-https://sites.google.com/site/rforfishandwildlifegrads/home/mumin_usage_examples
-
-1) Specify Model
-2) Dredge
-3) Model Summary
-4) Find best models
-5) Calculate importance weights
-
-## GLM dredge
-
-```{r}
-# be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
-dredge_glm_mod <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + 
-              NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
-
-dd_glm <- dredge(dredge_glm_mod)
-```
-```{r}
-summary(dredge_glm_mod)
-```
-
-```{r}
-# best supported models
-subset(dd_glm, delta < 5)
-
-# best model
-subset(dd_glm, delta == 0)
-
-# calculate variable importance weights
-importance(dd_glm)
-```
-
-#### LM dredge
-
-```{r}
-dredge_lm_mod <- lm(HighIncome ~ FamilyType + HouseCosts + Insurance + NumRooms + ElectricBill + FoodStamp + 
-                      OwnRent + NumBedrooms, data = acs_fit, na.action = na.fail)
-
-dd_lm <- dredge(dredge_lm_mod)
-
-summary(dredge_lm_mod)
-
-subset(dd_lm, delta < 5)
-
-subset(dd_lm, delta == 0)
-
-importance(dd_lm)
+mms2_aic <- AIC(mms2)
+mms2_aic
 ```
 
 # Generalized Additive Models
@@ -403,8 +386,8 @@ https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/gam.html
 2) Model summary
 3) Predict using model
 4) Use estimates to create binomial for High Income
-5) Display r squared
-6) Display AIC
+5) Set variable = r squared
+6) Set variable = AIC
 7) Confusion matrix
 8) Display confusion matrix
 9) Residual analysis
@@ -459,50 +442,135 @@ gam_cm2
 summary(acs_test$HighIncome - predict(gam_mod2,newdata=acs_test))
 ```
 
-#### Plot GAM model 2 to visualize the s() effect
+#### Plot GAM model 2 tosvm_cm1 visualize the s() effect
 
 ```{r}
 plot(gam_mod2)
 ```
 
+# MuMIn and the wonders of the dredge() function!
+
+This package automates the model specification process to some degree. It does so by "dredging" through all possible combinations of independent variables. You can then display "best models" and importance metrics, which can then be used to specify your model.
+
+This link is a very detailed example of using MuMIn and the dredge function. Scsprintf("Logistic model 6: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+        
+https://sites.google.com/site/rforfishandwildlifegrads/home/mumin_usage_examples
+
+1) Specify Model
+2) Dredge
+3) Model Summary
+4) Find best models
+5) Calculate importance weights
+
+## GLM dredge
+
+```{r}
+# be aware that this takes time to run. It is worth the wait BUT frowned upon when used due to spurious results and inference
+dredge_glm_mod <- glm(HighIncome ~ Insurance + HouseCosts + ElectricBill + FamilyType + FoodStamp + OwnRent + 
+              NumBedrooms + NumRooms, family=binomial(logit), na.action = "na.fail", data=acs_fit)
+
+dd_glm <- dredge(dredge_glm_mod)
+```
+```{r}
+summary(dredge_glm_mod)
+```
+
+```{r}
+# best supported models
+subset(dd_glm, delta < 5)
+
+# best model
+subset(dd_glm, delta == 0)
+
+# calculate variable importance weights
+importance(dd_glm)
+```
+
+#### LM dredge
+
+```{r}
+dredge_lm_mod <- lm(HighIncome ~ FamilyType + HouseCosts + Insurance + NumRooms + ElectricBill + FoodStamp + 
+                      OwnRent + NumBedrooms, data = acs_fit, na.action = na.fail)
+
+dd_lm <- dredge(dredge_lm_mod)
+
+summary(dredge_lm_mod)
+
+subset(dd_lm, delta < 5)
+
+subset(dd_lm, delta == 0)
+
+importance(dd_lm)
+```
 
 # Regression Model Comparison
 
-List all model's Accuracy, Sensitivity, and 1 additional metric
+List of all regression models
 
 ```{r}
 # Display comparison of accuracy of each decision tree 
+sprintf("LOGISTIC REGRESSION")
 
-sprintf("                       The no information rate = %.3f                              ", log_cm1$overall[5])
-
-sprintf("Logistic model 1: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 1: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm1$overall['Accuracy'], log_cm1$byClass['Sensitivity'], log_mod1_aic)
 
-sprintf("Logistic model 2: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 2: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm2$overall['Accuracy'], log_cm2$byClass['Sensitivity'], log_mod2_aic)
 
-sprintf("Logistic model 3: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 3: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm3$overall['Accuracy'], log_cm3$byClass['Sensitivity'], log_mod3_aic)
 
-sprintf("Logistic model 4: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 4: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm4$overall['Accuracy'], log_cm4$byClass['Sensitivity'], log_mod4_aic)
 
-sprintf("Logistic model 5: Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
+sprintf("Logistic model 5: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
         log_cm5$overall['Accuracy'], log_cm5$byClass['Sensitivity'], log_mod5_aic)
 
-sprintf("GAM model 1:      Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
-        gam_cm1$overall['Accuracy'], gam_cm1$byClass['Sensitivity'], gam_mod1_aic)
+sprintf("Logistic model 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+        log_cm6$overall['Accuracy'], log_cm6$byClass['Sensitivity'], log_mod6_aic)
 
-sprintf("GAM model 2:      Predicted Accuracy = %.3f Predicted Sensitivity = %.3f AIC = %.1f", 
-        gam_cm2$overall['Accuracy'], gam_cm2$byClass['Sensitivity'], gam_mod2_aic)
+sprintf("Logistic model 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+        log_cm6$overall['Accuracy'], log_cm6$byClass['Sensitivity'], log_mod6_aic)
+
+sprintf("                                                                                        ")
+
+sprintf("LINEAR REGRESSION")
+
+sprintf("Linear model 1:   Predicted Accuracy = %.4f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
+        linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], linear_mod1_rsq)
+
+sprintf("Linear model 2:   Predicted Accuracy = %.4f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
+        linear_cm2$overall['Accuracy'], linear_cm2$byClass['Sensitivity'], linear_mod2_rsq)
+
+sprintf("                                                                                        ")
+
+sprintf("SUPPORT VECTOR MACHINES")
+
+sprintf("SVM model 1:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f", 
+        svm_cm1$overall['Accuracy'], svm_cm1$byClass['Sensitivity'])
+
+sprintf("SVM model 2:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f", 
+        svm_cm2$overall['Accuracy'], svm_cm2$byClass['Sensitivity'])
+
+sprintf("SVM model 3:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f", 
+        svm_cm3$overall['Accuracy'], svm_cm3$byClass['Sensitivity'])
+sprintf("                                                                                        ")
+
+sprintf("MULTILEVEL MODEL SPECIFICATION")
 
 sprintf("MMS model 1:      Predicted Accuracy = NA    Predicted Sensitivity = NA    AIC = %.1f", mms1_aic)
 
-sprintf("Linear model 1:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
-        linear_cm1$overall['Accuracy'], linear_cm1$byClass['Sensitivity'], linear_mod1_adjR)
-sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3f Adj R-squared = %.3f", 
-        linear_cm2$overall['Accuracy'], linear_cm2$byClass['Sensitivity'], linear_mod2_adjR)
+sprintf("MMS model 2:      Predicted Accuracy = NA    Predicted Sensitivity = NA    AIC = %.1f", mms2_aic)
 
+sprintf("                                                                                        ")
+
+sprintf("GENERALIZED ADDITIVE MODELS")
+
+sprintf("GAM model 1:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+        gam_cm1$overall['Accuracy'], gam_cm1$byClass['Sensitivity'], gam_mod_aic)
+
+sprintf("GAM model 2:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3f AIC = %.1f", 
+        gam_cm2$overall['Accuracy'], gam_cm2$byClass['Sensitivity'], gam_mod2_aic)
 ```
 
 ### Choose best model(s) and display formula
@@ -511,8 +579,17 @@ sprintf("Linear model 2:   Predicted Accuracy = %.3f Predicted Sensitivity = %.3
 formula(gam_mod2)
 ```
 
-# Comments on logit and linear regression model
+# Regression model decision & comments
+
 1) My linear model does estimate negative incomes, which is not logically or stastically sound
     However, the purpose is to find best predictive model. So I ignored this to see how accurate I could predict High Income
-    I also created multi# Multilevel Model Specification
-2) Residual analysis of my best LM and best GAM models have a mean very far from 0, with quite a "large" range between min and max. This is not ideal, but for the purposes of stricly predicting as best as possible I can ignore this.
+    
+2) Residual analysis of my best LM and best GAM models have a mean very far from 0, with quite a "large" range between min and max. This is not ideal, but for the purposes of stricly predicting as best as possible I can ignore this
+
+3) Model comparisons
++ Many of the models have very close accuracy in predicting, and very similar sensitivity
++ Unfortunately all log models have very poor predicting accuracy because they have much higher sensitivity (good)
++ The linear models have highest sensitivity, with relatively high accuracy
++ Overall the SVM models have highest accuracy BUT also have low sensitivity
+
+4) I would choose the SVM model 3 based on highest accuracy
