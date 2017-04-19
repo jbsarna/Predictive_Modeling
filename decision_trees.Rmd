@@ -2,6 +2,7 @@
 title: "decision_trees"
 author: "Justin Sarna"
 date: "April 14, 2017"
+version: "Final"
 output: html_document
 ---
 
@@ -148,7 +149,7 @@ summary(acs_test$HighIncome - predict(tree5,newdata=acs_test))
 ```
 # "Random" Bagged Forests
 
-#### specify model and view
+#### Specify model and view
 ```{r}
 rand_bag1 <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
                           importance = TRUE, na.action = na.omit)
@@ -248,18 +249,17 @@ sprintf("Bag1:  Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitiv
 # Decision Tree Decision
 
 1) Highest fit accuracy does not result in in most accurate predictions - Model 4 is a prime example of overfitting
-  a) Model 4 has nearly perfect fit accuracy
-  b) Model 4 also has the worst prediction accuracy coupled with highest sensitivity
+  + Model 4 has nearly perfect fit accuracy
+  + Model 4 also has the worst prediction accuracy coupled with highest sensitivity
+  + Model 4 accuracy drops significantly once tested
 
-2) Model 5 is a close contender to model 3 - they have the highest predicted accuracies with "low" sensitivities
+2) Model 5 is a close contender to model 3 - they have the highest predicted accuracies BUT very different sensitivities
 
-3) I would choose Tree 3 for three reasons over all other decision trees
-    a) First, it has highest prediction accuracy at .9426
-    b) Second, it has the second lowest sensitivity at .1471
-    c) Thirdl, the predicted accuracy is the same as the fit accuracy (did not decrease once tested)
+3) Decision tree 3 performs better than tree 1, 2, 4, and 5
+    + First, it has higher prediction accuracy at .9426
+    + Second, the predicted accuracy is the same as the fit accuracy (did not decrease once tested like others)
 
 4) FINAL DECISION
-    a) Bag tree 1 has the highest predicted accuracy.
-    b) Interestingly, bag 1 had pretty low fit accuracy BUT the highest predicted accuracy
-    c) Slight concern - bag 1 sensitivity jumped very high from fit to test
-
+    + Bag tree 1 has the highest predicted accuracy.
+    + Interestingly, bag 1 had pretty low fit accuracy BUT the highest predicted accuracy
+    + Bag tree 1 increased in prediction accuracy between fit to test/predicted which resulted in a large increase in sensitivity = a very good thing!
