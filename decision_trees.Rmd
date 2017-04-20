@@ -220,8 +220,8 @@ summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_test))
 
 ```{r}
 rand_forest <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms + ElectricBill + 
-                            NumVehicles + NumChildren + NumPeople + FoodStamp + Language + NumRooms + OwnRent +NumUnits, data=acs_test, 
-                            mtry=12, importance = TRUE, na.action = na.omit)
+                            NumVehicles + NumChildren + NumPeople + FoodStamp + Language + NumRooms + OwnRent +
+                            NumUnits, data=acs_test, mtry=12, importance = TRUE, na.action = na.omit)
 ```
 #### Predict on fit data
 
