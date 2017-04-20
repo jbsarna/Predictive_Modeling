@@ -20,9 +20,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Understanding my code format/style
 
-  * '#' = comments
+    + '#' = comments
 
-  * '##' = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
+    + '##' = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
 
 ## Steps/Procedures to work through this R-project
 
@@ -30,26 +30,26 @@ There are 3 different ways to work through my project from start to finish
 
 1) All at once - pred_model_git.rmd
   
-  + This is one single rmd file that includes all of the methods
-  + You can start at the top and work through my entire process in a from start to finish
-  + Ends with a collection of important metrics for each method & model displayed together for easy analysis
+    + This is one single rmd file that includes all of the methods
+    + You can start at the top and work through my entire process in a from start to finish
+    + Ends with a collection of important metrics for each method & model displayed together for easy analysis
   
 2) Individual methods - pred_model_git.Rproj
   
-  + Each method has its own rmd file in my R project
-  + You can work through each method individually this way
-  + Each method's rmd file ends with a collection of important metrics for each model using the respective method
-  + The rmd file names are self explanatory, which makes this option easy to use
+    + Each method has its own rmd file in my R project
+    + You can work through each method individually this way
+    + Each method's rmd file ends with a collection of important metrics for each model using the respective method
+    + The rmd file names are self explanatory, which makes this option easy to use
 
 3) GitHub - https://github.com/jbsarna/Predictive_Modeling
 
-  + The above link will take you to my GitHub account
-  + All of the files in my R project are available on my GitHub account
-  + This is the arguably easiest way to "read" my code
-  + Downside is that you can't view any of the outputs
-  + This is a good option if you are using dual monitors - have GitHub on one and R on the other
-  + This would especially be useful as a "student" referring to this for future use in class
-  + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
+    + The above link will take you to my GitHub account
+    + All of the files in my R project are available on my GitHub account
+    + This is the arguably easiest way to "read" my code
+    + Downside is that you can't view any of the outputs
+    + This is a good option if you are using dual monitors - have GitHub on one and R on the other
+    + This would especially be useful as a "student" referring to this for future use in class
+    + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
 
 # My best model ended up being a random bagged forest! the prediction accuracy was over .98! 
 
