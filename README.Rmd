@@ -61,6 +61,7 @@ There are 3 different ways to work through my project from start to finish
     + This is a good option if you are using dual monitors - have GitHub on one and R on the other
     + This would especially be useful as a "student" referring to this for future use in class
     + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
+    + Lastly, I am happy to share this work in hopes that others can benefit from it...much in the same way I have from others
 
 # Best Model
 
