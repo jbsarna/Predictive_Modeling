@@ -859,6 +859,42 @@ bag_cm1_pred
 summary(acs_test$HighIncome - predict(rand_bag1,newdata=acs_test))
 ```
 
+# Random Forest
+
+#### Specify model and view
+
+```{r}
+rand_forest <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms + ElectricBill + 
+                            NumVehicles + NumChildren + NumPeople + FoodStamp + Language + NumRooms + OwnRent +NumUnits, data=acs_test, 
+                            mtry=12, importance = TRUE, na.action = na.omit)
+```
+#### Predict on fit data
+
+```{r}
+rf_fit <- predict(rand_forest, acs_fit, type="class" )
+
+acs_fit$HighIncome_rf_fit <- ifelse(rf_fit > .5,1,0)
+
+rf_cm_fit <- confusionMatrix(acs_fit$HighIncome_rf_fit, acs_fit$HighIncome, positive = "1")
+
+rf_cm_fit
+```
+
+#### Test Model on acs_test to see how well it predicts
+
+```{r}
+rf_pred <- predict(rand_forest, acs_test, type="class" )
+
+acs_test$HighIncome_rf <- ifelse(rf_pred > .5,1,0)
+
+rf_cm_pred <- confusionMatrix(acs_test$HighIncome_rf, acs_test$HighIncome, positive = "1")
+
+rf_cm_pred
+
+# Residual analysis
+summary(acs_test$HighIncome - predict(rand_forest,newdata=acs_test))
+```
+
 ## Tree predictions
 
 1) Make predictions using test data
@@ -1261,6 +1297,9 @@ sprintf("Tree 5: Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sen
 sprintf("Bag 1:  Fit Accuracy = %.4f   Predicted Accuracy = %.4f   Predicted Sensitivity = %.4f",bag_cm1_fit$overall['Accuracy'], 
         bag_cm1_pred$overall['Accuracy'], bag_cm1_pred$byClass['Sensitivity'])
 
+sprintf("RF:    Fit Accuracy = %.4f Predicted Accuracy = %.4f Predicted Sensitivity = %.4f",rf_cm_fit$overall['Accuracy'], 
+        rf_cm_pred$overall['Accuracy'], rf_cm_pred$byClass['Sensitivity'])
+
 sprintf("                                                                                                      ")
 
 sprintf("K NEAREST NEIGHBOR")
@@ -1293,6 +1332,7 @@ sprintf("GAM cluster 1:    Predicted Accuracy = %.3f    Predicted Sensitivity = 
 sprintf("GAM cluster 2:    Predicted Accuracy = %.3f    Predicted Sensitivity = %.3f   AIC = %.1f", 
         gam_cluster_cm2$overall['Accuracy'], gam_cluster_cm2$byClass['Sensitivity'], gam_cluster2_aic)
 ```
-# BEST MODEL = Bagged Random Forest
+# BEST MODEL = Random Forest
 
-### Prediction accuracy > .98
+### Prediction accuracy > .9903
+### Prediction Sensitivity = .8382

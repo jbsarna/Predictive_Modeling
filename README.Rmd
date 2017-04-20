@@ -53,8 +53,8 @@ There are 3 different ways to work through my project from start to finish
 
 # Best Model
 
-#### My best model ended up being a random bagged forest with prediction accuracy over .98!
+#### My best model ended up being a Random Forest with prediction accuracy of .9903 and sensitivity of .8382!
 
-    rand_bag1 <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
-                          importance = TRUE, na.action = na.omit)
-
+    rand_forest <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms + ElectricBill + 
+                            NumVehicles + NumChildren + NumPeople + FoodStamp + Language + NumRooms + OwnRent +NumUnits, data=acs_test, 
+                            mtry=12, importance = TRUE, na.action = na.omit)
