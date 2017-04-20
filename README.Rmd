@@ -20,9 +20,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Understanding my code format/style
 
-    + '#' = comments
+    '#' = comments
 
-    + '##' = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
+    '##' = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
 
 ## Steps/Procedures to work through this R-project
 
@@ -51,5 +51,7 @@ There are 3 different ways to work through my project from start to finish
     + This would especially be useful as a "student" referring to this for future use in class
     + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
 
-# My best model ended up being a random bagged forest! the prediction accuracy was over .98! 
+### My best model ended up being a random bagged forest! the prediction accuracy was over .98!
+
+    formula(rand_bag1)
 
