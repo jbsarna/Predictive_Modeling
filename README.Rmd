@@ -20,9 +20,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Understanding my code format/style
 
-1) # = comments
+  * # = comments
 
-2) ## = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
+  * ## = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
 
 ## Steps/Procedures to work through this R-project
 
