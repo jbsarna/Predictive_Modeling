@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Background Information
 
 1) Don't worry if a code chunk takes a little time to execute. I only included models/code that would execute in less than
-    1 minute (most sexecute in just a matter of seconds)
+    1 minute (most execute in just a matter of seconds)
 
 #### Understanding my code format/style
 
@@ -51,7 +51,9 @@ There are 3 different ways to work through my project from start to finish
     + This would especially be useful as a "student" referring to this for future use in class
     + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
 
-### My best model ended up being a random bagged forest with prediction accuracy over .98!
+# Best Model
+
+#### My best model ended up being a random bagged forest with prediction accuracy over .98!
 
     rand_bag1 <- randomForest(HighIncome ~ Insurance + ElectricBill + HouseCosts + NumBedrooms , data=acs_test, mtry=4,
                           importance = TRUE, na.action = na.omit)
