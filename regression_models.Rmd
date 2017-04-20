@@ -494,9 +494,6 @@ subset(dd_glm, delta < 5)
 
 # best model
 subset(dd_glm, delta == 0)
-
-# calculate variable importance weights
-importance(dd_glm)
 ```
 
 #### LM dredge
@@ -512,8 +509,6 @@ summary(dredge_lm_mod)
 subset(dd_lm, delta < 5)
 
 subset(dd_lm, delta == 0)
-
-importance(dd_lm)
 ```
 
 # Regression Model Comparison
@@ -585,11 +580,6 @@ sprintf("GAM model 2:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3
         gam_cm2$overall['Accuracy'], gam_cm2$byClass['Sensitivity'], gam_mod2_aic)
 ```
 
-### Choose best model(s) and display formula
-
-```{r}
-formula(gam_mod2)
-```
 
 # Regression model decision & comments
 
