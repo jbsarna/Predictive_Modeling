@@ -683,9 +683,6 @@ subset(dd_glm, delta < 5)
 
 # best model
 subset(dd_glm, delta == 0)
-
-# calculate variable importance weights
-importance(dd_glm)
 ```
 
 #### LM dredge
@@ -701,8 +698,6 @@ summary(dredge_lm_mod)
 subset(dd_lm, delta < 5)
 
 subset(dd_lm, delta == 0)
-
-importance(dd_lm)
 ```
 
 # DECISION TREES
