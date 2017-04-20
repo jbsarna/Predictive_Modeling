@@ -32,7 +32,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
     '##' = code that has been "commented out", but could be useful for deeper analysis/understanding of my process
 
-## Steps/Procedures to work through this R-project
+## How to "work" through my R-project
 
 There are 3 different ways to work through my project from start to finish
 
@@ -56,7 +56,7 @@ There are 3 different ways to work through my project from start to finish
 
     + The above link will take you to my GitHub account
     + All of the files in my R project are available on my GitHub account
-    + This is the arguably easiest way to "read" my code
+    + This is arguably the easiest way to "read" my code
     + Downside is that you can't view any of the outputs
     + This is a good option if you are using dual monitors - have GitHub on one and R on the other
     + This would especially be useful as a "student" referring to this for future use in class
