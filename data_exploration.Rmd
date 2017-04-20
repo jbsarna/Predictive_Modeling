@@ -28,6 +28,13 @@ library(lme4)
 library(mgcv)
 ```
 
+#### Read in the data
+
+```{r}
+acs <- read.table("http://jaredlander.com/data/acs_ny.csv",sep=",",
+                  header=TRUE, stringsAsFactors=TRUE)
+```
+
 Let's assume our goal is to build a model to predict if household income is greater 
 than $250,000 per year.
 

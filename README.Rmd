@@ -34,16 +34,25 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## How to "work" through my R-project
 
-There are 3 different ways to work through my project from start to finish
+There are 4 different ways to work through my project from start to finish
 
-1) All at once - pred_model_git.rmd
+
+1) Knitted html files
+
+    + Each individual method rmd has been knitted to html and provided
+    + The complete project (pred_model_git.rmd) has also been knitted to html
+    + This is probably the most efficient way to work through the entire project because it does not require executing any code
+
+
+2) All at once - pred_model_git.rmd
   
     + This is one single rmd file that includes all of the methods
     + You can start at the top and work through my entire process from start to finish
     + Ends with a collection of important metrics for each method & model displayed together for easy analysis
     + I provide comments/text throughout the code to explain the code and process
   
-2) Individual methods - pred_model_git.Rproj
+
+3) Individual methods - pred_model_git.Rproj
   
     + Each method has its own rmd file in my R project
     + You can work through each method individually this way
@@ -52,7 +61,7 @@ There are 3 different ways to work through my project from start to finish
     + I provide comments/text throughout the code to explain the code and process
 
 
-3) GitHub - https://github.com/jbsarna/Predictive_Modeling
+4) GitHub - https://github.com/jbsarna/Predictive_Modeling
 
     + The above link will take you to my GitHub account
     + All of the files in my R project are available on my GitHub account
@@ -62,6 +71,7 @@ There are 3 different ways to work through my project from start to finish
     + This would especially be useful as a "student" referring to this for future use in class
     + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
     + Lastly, I am happy to share this work in hopes that others can benefit from it...much in the same way I have from others
+
 
 # Best Model
 
