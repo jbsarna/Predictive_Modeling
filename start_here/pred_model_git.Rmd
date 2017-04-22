@@ -1332,3 +1332,20 @@ sprintf("GAM cluster 2:    Predicted Accuracy = %.3f    Predicted Sensitivity = 
 
 ### Prediction accuracy > .9903
 ### Prediction Sensitivity = .8382
+
+## General comments on findings
+
+    + Fit accuracy does not result in in most accurate predictions - Decision tree 4 is a good example of overfitting
+    + Until a model is tested on new data, a decision on which model to use is risky
+    + Logistic models were very ineffective, which was surprising to me
+    + I had better luck using linear regression to estimate family income, converting the estimates to a binary, and testing the model than using logistic regression
+    + The more complicated models can lead to weak predictive power
+    + Interestingly, my best model for hw4 was a relatively simple model using the "workhorse" method of linear regression
+    + Dredge is a useful function for exploratory purposes in determing the "best" variables to include in the model
+    + SVM was the best performing regression method
+    + The most effective model/method for predicting with this data set was a Random Forest
+    + This does not mean that Random Forests will always perform the best because each data set is unique
+        + Different variables, ranges, topics, and purposes could lead to different methods being more effective than others
+        + As a result, I recommend exploring all methods when specifying the "best" predictive model because what holds for one data set may not hold for another
+    
+    

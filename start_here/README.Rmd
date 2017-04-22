@@ -43,6 +43,7 @@ There are 4 different ways to work through my project from start to finish
     + Each individual method rmd has been knitted to html and provided
     + The complete project (pred_model_git.rmd) has also been knitted to html
     + This is probably the most efficient way to work through the entire project because it does not require executing any code
+    + To see a summary with general comments on predictive modeling scroll to the bottme of the pred_model_git.html file
 
 
 2) All at once - pred_model_git.rmd
@@ -51,6 +52,7 @@ There are 4 different ways to work through my project from start to finish
     + You can start at the top and work through my entire process from start to finish
     + Ends with a collection of important metrics for each method & model displayed together for easy analysis
     + I provide comments/text throughout the code to explain the code and process
+    + To see a summary comparison with general comments on predictive modeling scroll to the bottom of the pred_model_git.rmd file
   
 
 3) Individual methods - pred_model_git.Rproj
@@ -69,7 +71,8 @@ There are 4 different ways to work through my project from start to finish
     + This is arguably the easiest way to "read" my code
     + Downside is that you can't view any of the outputs
     + This is a good option if you are using dual monitors - have GitHub on one and R on the other
-    + This would especially be useful as a "student" referring to this for future use in class
+    + To see a summary with general comments on predictive modeling scroll to the bottom of the pred_model_git file in the start_here folder
+    + This would especially be useful as a "student" referring to this for future use in class or "teaching" these methods
     + This is also going to be very useful for me personally when doing predictive modeling or using R in general in the future
     + Lastly, I am happy to share this work in hopes that others can benefit from it...much in the same way I have from others. So it only seemed fitting to make it publicly available
 
