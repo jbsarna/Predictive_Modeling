@@ -590,7 +590,7 @@ sprintf("GAM model 2:      Predicted Accuracy = %.4f Predicted Sensitivity = %.3
 
 3) Model comparisons
   + Many of the models have very close accuracy in predicting, and very similar sensitivity
-  + Unfortunately all log models have very poor predicting accuracy because they have much higher sensitivity (good)
+  + Unfortunately all log models have very poor predicting accuracy but they have much higher sensitivity (a good thing)
   + The linear models have highest sensitivity, with relatively high accuracy
   + Overall the SVM models have highest accuracy BUT also have low sensitivity
 
