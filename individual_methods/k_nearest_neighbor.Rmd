@@ -225,7 +225,7 @@ sprintf("Knn 6: Predicted Accuracy = %.4f Predicted Sensitivity = %.4f", knn6_cm
 
 # K nearest neighbor decision
 
-1) I would choose knn model 6 because highest (tested) accuracy. This decision is made with reservation because of 
+1) I would choose knn model 5 because highest (tested) accuracy. This decision is made with reservation because of 
     low sensitivity. However, all all of these models have low sensitivity, which leads to decision based on accuracy.
 
 2) As I increase k the accuracy increases until I chose k = 50. One could continue to repeat this process or (loop) to 
